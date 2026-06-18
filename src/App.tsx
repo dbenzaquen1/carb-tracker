@@ -3,6 +3,7 @@ import { isSupabaseConfigured, supabase } from './lib/supabase'
 import { addDays, lastNDays, todayISO } from './lib/dates'
 import { useAuth } from './hooks/useAuth'
 import { useEntries } from './hooks/useEntries'
+import { useExercise } from './hooks/useExercise'
 import { useProfile } from './hooks/useProfile'
 import { BottomNav, type Tab } from './components/BottomNav'
 import { ConfigNeeded } from './components/ConfigNeeded'
@@ -38,9 +39,15 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
   const earliest = lastNDays(30, today)[0]
   const fromDate = selectedDate < earliest ? selectedDate : earliest
 
-  const { goal, updateGoal } = useProfile(userId)
+  const { goal, weeklyExerciseGoal, updateGoal, updateWeeklyExerciseGoal } =
+    useProfile(userId)
   const { entries, loading, error, addEntry, updateEntry, deleteEntry } =
     useEntries(userId, fromDate, today)
+  const { exercisedDates, toggle: toggleExercise } = useExercise(
+    userId,
+    fromDate,
+    today,
+  )
 
   const dayEntries = entries.filter((e) => e.entry_date === selectedDate)
 
@@ -86,6 +93,8 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
               onPrevDay={goPrevDay}
               onNextDay={goNextDay}
               onToday={() => setSelectedDate(today)}
+              exercised={exercisedDates.has(selectedDate)}
+              onToggleExercise={() => toggleExercise(selectedDate)}
             />
           ))}
 
@@ -93,15 +102,23 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
           (loading ? (
             <Spinner />
           ) : (
-            <Metrics entries={entries} goal={goal} today={today} />
+            <Metrics
+              entries={entries}
+              goal={goal}
+              today={today}
+              exercisedDates={exercisedDates}
+              weeklyExerciseGoal={weeklyExerciseGoal}
+            />
           ))}
 
         {tab === 'settings' && (
           <Settings
             goal={goal}
+            weeklyExerciseGoal={weeklyExerciseGoal}
             email={email}
             entries={entries}
             onSaveGoal={updateGoal}
+            onSaveWeeklyExerciseGoal={updateWeeklyExerciseGoal}
             onSignOut={handleSignOut}
           />
         )}

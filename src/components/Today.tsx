@@ -21,6 +21,8 @@ interface Props {
   onPrevDay: () => void
   onNextDay: () => void
   onToday: () => void
+  exercised: boolean
+  onToggleExercise: () => void
 }
 
 /**
@@ -38,6 +40,8 @@ export function Today({
   onPrevDay,
   onNextDay,
   onToday,
+  exercised,
+  onToggleExercise,
 }: Props) {
   const consumed = sumCarbs(entries)
   const isToday = date === today
@@ -73,6 +77,21 @@ export function Today({
       </div>
 
       <SummaryRing consumed={consumed} goal={goal} />
+
+      <button
+        type="button"
+        className={`exercise-toggle ${exercised ? 'is-done' : ''}`}
+        aria-pressed={exercised}
+        onClick={onToggleExercise}
+      >
+        <span className="exercise-toggle__box" aria-hidden="true">
+          {exercised ? '✓' : ''}
+        </span>
+        <span className="exercise-toggle__label">
+          {exercised ? 'Exercise done' : 'Mark exercise done'}
+        </span>
+      </button>
+
       <AddEntryForm date={date} onAdd={onAdd} />
 
       {entries.length === 0 ? (

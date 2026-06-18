@@ -4,34 +4,55 @@ import type { Entry } from '../types'
 
 interface Props {
   goal: number
+  weeklyExerciseGoal: number
   email: string
   entries: Entry[]
   onSaveGoal: (goal: number) => void | Promise<void>
+  onSaveWeeklyExerciseGoal: (goal: number) => void | Promise<void>
   onSignOut: () => void | Promise<void>
 }
 
 export function Settings({
   goal,
+  weeklyExerciseGoal,
   email,
   entries,
   onSaveGoal,
+  onSaveWeeklyExerciseGoal,
   onSignOut,
 }: Props) {
   const [value, setValue] = useState(String(goal))
   const [saved, setSaved] = useState(false)
+  const [exerciseValue, setExerciseValue] = useState(String(weeklyExerciseGoal))
+  const [exerciseSaved, setExerciseSaved] = useState(false)
 
   useEffect(() => {
     setValue(String(goal))
   }, [goal])
 
+  useEffect(() => {
+    setExerciseValue(String(weeklyExerciseGoal))
+  }, [weeklyExerciseGoal])
+
   const parsed = Number(value)
   const isValid = Number.isFinite(parsed) && parsed > 0
+
+  const exerciseParsed = Number(exerciseValue)
+  const isExerciseValid =
+    Number.isFinite(exerciseParsed) && exerciseParsed > 0 && exerciseParsed <= 7
 
   async function handleSave() {
     if (!isValid) return
     await onSaveGoal(Math.round(parsed))
     setSaved(true)
     setTimeout(() => setSaved(false), 1500)
+  }
+
+  async function handleSaveExercise() {
+    if (!isExerciseValid) return
+    await onSaveWeeklyExerciseGoal(Math.round(exerciseParsed))
+    setExerciseSaved(true)
+    setTimeout(() => setExerciseSaved(false), 1500)
   }
 
   function handleExport() {
@@ -67,6 +88,27 @@ export function Settings({
           disabled={!isValid}
         >
           {saved ? 'Saved ✓' : 'Save goal'}
+        </button>
+      </section>
+
+      <section className="settings__section">
+        <label className="field">
+          <span>Weekly exercise goal (days)</span>
+          <input
+            type="number"
+            inputMode="numeric"
+            min="1"
+            max="7"
+            value={exerciseValue}
+            onChange={(e) => setExerciseValue(e.target.value)}
+          />
+        </label>
+        <button
+          className="btn btn--primary"
+          onClick={handleSaveExercise}
+          disabled={!isExerciseValid}
+        >
+          {exerciseSaved ? 'Saved ✓' : 'Save exercise goal'}
         </button>
       </section>
 

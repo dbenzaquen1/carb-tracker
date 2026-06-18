@@ -18,6 +18,8 @@ function renderDay(date: string, today: string, overrides = {}) {
     onPrevDay: vi.fn(),
     onNextDay: vi.fn(),
     onToday: vi.fn(),
+    exercised: false,
+    onToggleExercise: vi.fn(),
     ...overrides,
   }
   render(<Today {...props} />)
@@ -58,5 +60,22 @@ describe('Today day navigation', () => {
     expect(
       screen.getByText(/No entries logged for this day/i),
     ).toBeInTheDocument()
+  })
+})
+
+describe('Today exercise toggle', () => {
+  it('shows the unchecked label and fires onToggleExercise', async () => {
+    const user = userEvent.setup()
+    const props = renderDay('2026-06-18', '2026-06-18')
+    const toggle = screen.getByRole('button', { name: /Mark exercise done/i })
+    expect(toggle).toHaveAttribute('aria-pressed', 'false')
+    await user.click(toggle)
+    expect(props.onToggleExercise).toHaveBeenCalledTimes(1)
+  })
+
+  it('shows the done state when already exercised', () => {
+    renderDay('2026-06-18', '2026-06-18', { exercised: true })
+    const toggle = screen.getByRole('button', { name: /Exercise done/i })
+    expect(toggle).toHaveAttribute('aria-pressed', 'true')
   })
 })

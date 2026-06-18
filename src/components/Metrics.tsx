@@ -1,4 +1,4 @@
-import { formatShort, lastNDays } from '../lib/dates'
+import { formatShort, lastNDays, weekdayLabel } from '../lib/dates'
 import {
   averagePerLoggedDay,
   dailyTotals,
@@ -6,6 +6,7 @@ import {
   highestDay,
   loggedDayCount,
 } from '../lib/metrics'
+import { countExercised, weeklyAverage } from '../lib/exercise'
 import type { Entry } from '../types'
 import { BarChart } from './BarChart'
 
@@ -13,6 +14,8 @@ interface Props {
   entries: Entry[]
   goal: number
   today: string
+  exercisedDates: Set<string>
+  weeklyExerciseGoal: number
 }
 
 function StatCard({
@@ -34,8 +37,15 @@ function StatCard({
 }
 
 /** Trends view: averages, on-target days, and a 14-day chart. */
-export function Metrics({ entries, goal, today }: Props) {
-  const daily7 = dailyTotals(entries, lastNDays(7, today))
+export function Metrics({
+  entries,
+  goal,
+  today,
+  exercisedDates,
+  weeklyExerciseGoal,
+}: Props) {
+  const last7 = lastNDays(7, today)
+  const daily7 = dailyTotals(entries, last7)
   const daily14 = dailyTotals(entries, lastNDays(14, today))
   const daily30 = dailyTotals(entries, lastNDays(30, today))
 
@@ -44,6 +54,14 @@ export function Metrics({ entries, goal, today }: Props) {
   const within7 = daysWithinGoal(daily7, goal)
   const logged7 = loggedDayCount(daily7)
   const peak = highestDay(daily30)
+
+  const exercisedThisWeek = countExercised(last7, exercisedDates)
+  const exerciseWeeklyAvg = weeklyAverage(lastNDays(30, today), exercisedDates)
+  const metExerciseGoal = exercisedThisWeek >= weeklyExerciseGoal
+  const exercisePct = Math.min(
+    100,
+    Math.round((exercisedThisWeek / weeklyExerciseGoal) * 100),
+  )
 
   return (
     <div className="view metrics">
@@ -71,6 +89,47 @@ export function Metrics({ entries, goal, today }: Props) {
           <span className="dot dot--ok" /> within goal
           <span className="dot dot--over" /> over goal
           <span className="legend-line" /> goal
+        </p>
+      </section>
+
+      <section className="chart-card exercise-card">
+        <div className="exercise-card__head">
+          <h3>Exercise</h3>
+          <span
+            className={`exercise-card__count ${metExerciseGoal ? 'is-met' : ''}`}
+          >
+            {exercisedThisWeek} / {weeklyExerciseGoal} this week
+          </span>
+        </div>
+        <div className="progress">
+          <div
+            className={`progress__bar ${metExerciseGoal ? 'is-met' : ''}`}
+            style={{ width: `${exercisePct}%` }}
+          />
+        </div>
+        <div className="exercise-week" aria-label="Last 7 days of exercise">
+          {last7.map((date) => {
+            const done = exercisedDates.has(date)
+            return (
+              <div className="exercise-week__day" key={date}>
+                <span
+                  className={`exercise-week__dot ${done ? 'is-done' : ''}`}
+                  aria-hidden="true"
+                >
+                  {done ? '✓' : ''}
+                </span>
+                <span className="exercise-week__label">
+                  {weekdayLabel(date).charAt(0)}
+                </span>
+              </div>
+            )
+          })}
+        </div>
+        <p className="metrics__note">
+          {metExerciseGoal
+            ? '🎉 Weekly goal met!'
+            : `${Math.max(0, weeklyExerciseGoal - exercisedThisWeek)} to go this week`}{' '}
+          · {exerciseWeeklyAvg}/week over 30 days
         </p>
       </section>
 

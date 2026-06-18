@@ -32,3 +32,6 @@ export interface Profile {
 }
 
 export const DEFAULT_DAILY_GOAL = 150
+
+/** Default number of days per week the user aims to exercise. */
+export const DEFAULT_WEEKLY_EXERCISE_GOAL = 5
