@@ -52,6 +52,11 @@ npm install
 > personal setup you can turn it off under **Authentication → Providers →
 > Email → Confirm email**, so you can sign in immediately after signing up.
 
+> **Already have a project from an earlier version?** Apply any new SQL in
+> [`supabase/migrations/`](supabase/migrations) in the SQL editor (in order) to
+> add later features. `schema.sql` always reflects the full, current schema for
+> fresh setups.
+
 ### 3. Configure environment variables
 
 ```bash
