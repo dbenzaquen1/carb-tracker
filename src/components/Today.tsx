@@ -13,6 +13,10 @@ interface Props {
   goal: number
   entries: Entry[]
   onAdd: (entry: NewEntry) => void | Promise<void>
+  onUpdate: (
+    id: string,
+    patch: Partial<Pick<Entry, 'name' | 'carbs' | 'meal'>>,
+  ) => void | Promise<void>
   onDelete: (id: string) => void
   onPrevDay: () => void
   onNextDay: () => void
@@ -29,6 +33,7 @@ export function Today({
   goal,
   entries,
   onAdd,
+  onUpdate,
   onDelete,
   onPrevDay,
   onNextDay,
@@ -77,7 +82,7 @@ export function Today({
             : 'No entries logged for this day. You can add them above.'}
         </p>
       ) : (
-        <EntryList entries={entries} onDelete={onDelete} />
+        <EntryList entries={entries} onUpdate={onUpdate} onDelete={onDelete} />
       )}
     </div>
   )

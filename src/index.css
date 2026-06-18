@@ -330,9 +330,9 @@ h3 {
 }
 .entry {
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: 1fr auto auto auto;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.5rem;
   padding: 0.7rem 0.9rem;
   border-top: 1px solid var(--border);
 }
@@ -346,6 +346,7 @@ h3 {
   color: var(--muted);
   font-weight: 600;
 }
+.entry__edit,
 .entry__delete {
   border: none;
   background: transparent;
@@ -354,9 +355,53 @@ h3 {
   padding: 0.2rem 0.4rem;
   border-radius: 8px;
 }
+.entry__edit:active {
+  background: var(--green-soft);
+  color: var(--green-dark);
+}
 .entry__delete:active {
   background: #fef2f2;
   color: var(--red);
+}
+
+/* Inline edit mode */
+.entry--editing {
+  display: block;
+  padding: 0.8rem 0.9rem;
+}
+.entry-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.entry-edit input,
+.entry-edit select {
+  font-size: 1rem;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--text);
+}
+.entry-edit input:focus,
+.entry-edit select:focus {
+  outline: 2px solid var(--green);
+  outline-offset: 1px;
+}
+.entry-edit__name {
+  width: 100%;
+}
+.entry-edit__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+.entry-edit__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+.entry-edit__actions .btn {
+  flex: 1;
 }
 
 /* ---------- Metrics ---------- */

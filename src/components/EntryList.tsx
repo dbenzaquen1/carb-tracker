@@ -1,13 +1,18 @@
 import { groupByMeal, mealTotals } from '../lib/carbs'
 import { MEALS, MEAL_LABELS, type Entry } from '../types'
+import { EntryRow } from './EntryRow'
 
 interface Props {
   entries: Entry[]
+  onUpdate: (
+    id: string,
+    patch: Partial<Pick<Entry, 'name' | 'carbs' | 'meal'>>,
+  ) => void | Promise<void>
   onDelete: (id: string) => void
 }
 
 /** Today's entries grouped by meal, each with a per-meal subtotal. */
-export function EntryList({ entries, onDelete }: Props) {
+export function EntryList({ entries, onUpdate, onDelete }: Props) {
   const groups = groupByMeal(entries)
   const totals = mealTotals(entries)
 
@@ -24,17 +29,12 @@ export function EntryList({ entries, onDelete }: Props) {
             </header>
             <ul className="meal__items">
               {items.map((entry) => (
-                <li className="entry" key={entry.id}>
-                  <span className="entry__name">{entry.name}</span>
-                  <span className="entry__carbs">{entry.carbs} g</span>
-                  <button
-                    className="entry__delete"
-                    aria-label={`Delete ${entry.name}`}
-                    onClick={() => onDelete(entry.id)}
-                  >
-                    ✕
-                  </button>
-                </li>
+                <EntryRow
+                  key={entry.id}
+                  entry={entry}
+                  onUpdate={onUpdate}
+                  onDelete={onDelete}
+                />
               ))}
             </ul>
           </section>
