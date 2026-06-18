@@ -5,8 +5,10 @@ import {
   lastNDays,
   parseISODate,
   relativeDayLabel,
+  startOfWeekSunday,
   toISODate,
   todayISO,
+  weekDates,
   weekdayLabel,
   formatShort,
 } from './dates'
@@ -67,6 +69,33 @@ describe('labels', () => {
 
   it('formatShort combines weekday and month/day', () => {
     expect(formatShort('2026-06-18')).toBe('Thu 6/18')
+  })
+})
+
+describe('startOfWeekSunday / weekDates', () => {
+  // 2026-06-18 is a Thursday; that week's Sunday is 2026-06-14.
+  it('finds the Sunday on or before a midweek date', () => {
+    expect(startOfWeekSunday('2026-06-18')).toBe('2026-06-14')
+  })
+
+  it('returns the same day when it is already Sunday', () => {
+    expect(startOfWeekSunday('2026-06-14')).toBe('2026-06-14')
+  })
+
+  it('maps Saturday to the same week start', () => {
+    expect(startOfWeekSunday('2026-06-20')).toBe('2026-06-14')
+  })
+
+  it('lists the 7 days of the week Sun → Sat', () => {
+    expect(weekDates('2026-06-18')).toEqual([
+      '2026-06-14',
+      '2026-06-15',
+      '2026-06-16',
+      '2026-06-17',
+      '2026-06-18',
+      '2026-06-19',
+      '2026-06-20',
+    ])
   })
 })
 
