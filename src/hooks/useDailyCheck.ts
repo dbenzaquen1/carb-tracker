@@ -1,24 +1,26 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
-export interface ExerciseState {
-  /** Set of YYYY-MM-DD dates the user exercised, within the loaded window. */
-  exercisedDates: Set<string>
+export interface DailyCheckState {
+  /** Set of YYYY-MM-DD dates marked done, within the loaded window. */
+  doneDates: Set<string>
   loading: boolean
-  /** Toggle the exercise mark for a given day (optimistic). */
+  /** Toggle the mark for a given day (optimistic). */
   toggle: (date: string) => Promise<void>
 }
 
 /**
- * Loads the user's exercise days between `fromIso` and `toIso` (inclusive) and
- * lets the UI toggle a day on/off. A day is "done" when a row exists for it.
+ * Generic per-day check-off backed by a table whose rows are `(user_id,
+ * entry_date)` and whose existence means "done that day". Used for both
+ * `exercise_days` and `pt_days`.
  */
-export function useExercise(
+export function useDailyCheck(
   userId: string | undefined,
+  table: string,
   fromIso: string,
   toIso: string,
-): ExerciseState {
-  const [exercisedDates, setExercisedDates] = useState<Set<string>>(new Set())
+): DailyCheckState {
+  const [doneDates, setDoneDates] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
 
   const reload = useCallback(async () => {
@@ -28,16 +30,14 @@ export function useExercise(
     }
     setLoading(true)
     const { data } = await supabase
-      .from('exercise_days')
+      .from(table)
       .select('entry_date')
       .eq('user_id', userId)
       .gte('entry_date', fromIso)
       .lte('entry_date', toIso)
-    setExercisedDates(
-      new Set((data ?? []).map((row) => row.entry_date as string)),
-    )
+    setDoneDates(new Set((data ?? []).map((row) => row.entry_date as string)))
     setLoading(false)
-  }, [userId, fromIso, toIso])
+  }, [userId, table, fromIso, toIso])
 
   useEffect(() => {
     void reload()
@@ -46,10 +46,10 @@ export function useExercise(
   const toggle = useCallback(
     async (date: string) => {
       if (!supabase || !userId) return
-      const wasDone = exercisedDates.has(date)
+      const wasDone = doneDates.has(date)
 
       // Optimistic update.
-      setExercisedDates((prev) => {
+      setDoneDates((prev) => {
         const next = new Set(prev)
         if (wasDone) next.delete(date)
         else next.add(date)
@@ -58,17 +58,17 @@ export function useExercise(
 
       const { error } = wasDone
         ? await supabase
-            .from('exercise_days')
+            .from(table)
             .delete()
             .eq('user_id', userId)
             .eq('entry_date', date)
         : await supabase
-            .from('exercise_days')
+            .from(table)
             .insert({ user_id: userId, entry_date: date })
 
       if (error) {
         // Roll back on failure.
-        setExercisedDates((prev) => {
+        setDoneDates((prev) => {
           const next = new Set(prev)
           if (wasDone) next.add(date)
           else next.delete(date)
@@ -76,8 +76,8 @@ export function useExercise(
         })
       }
     },
-    [userId, exercisedDates],
+    [userId, table, doneDates],
   )
 
-  return { exercisedDates, loading, toggle }
+  return { doneDates, loading, toggle }
 }

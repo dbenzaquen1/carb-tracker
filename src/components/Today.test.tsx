@@ -18,8 +18,7 @@ function renderDay(date: string, today: string, overrides = {}) {
     onPrevDay: vi.fn(),
     onNextDay: vi.fn(),
     onToday: vi.fn(),
-    exercised: false,
-    onToggleExercise: vi.fn(),
+    checks: [],
     ...overrides,
   }
   render(<Today {...props} />)
@@ -63,19 +62,51 @@ describe('Today day navigation', () => {
   })
 })
 
-describe('Today exercise toggle', () => {
-  it('shows the unchecked label and fires onToggleExercise', async () => {
+describe('Today daily checks', () => {
+  it('renders a check unchecked and fires its onToggle', async () => {
     const user = userEvent.setup()
-    const props = renderDay('2026-06-18', '2026-06-18')
-    const toggle = screen.getByRole('button', { name: /Mark exercise done/i })
+    const onToggle = vi.fn()
+    renderDay('2026-06-18', '2026-06-18', {
+      checks: [
+        {
+          key: 'exercise',
+          done: false,
+          onToggle,
+          idleLabel: 'Mark exercise done',
+          doneLabel: 'Exercise done',
+        },
+      ],
+    })
+    const toggle = screen.getByRole('button', { name: 'Mark exercise done' })
     expect(toggle).toHaveAttribute('aria-pressed', 'false')
     await user.click(toggle)
-    expect(props.onToggleExercise).toHaveBeenCalledTimes(1)
+    expect(onToggle).toHaveBeenCalledTimes(1)
   })
 
-  it('shows the done state when already exercised', () => {
-    renderDay('2026-06-18', '2026-06-18', { exercised: true })
-    const toggle = screen.getByRole('button', { name: /Exercise done/i })
-    expect(toggle).toHaveAttribute('aria-pressed', 'true')
+  it('renders multiple checks with their done state', () => {
+    renderDay('2026-06-18', '2026-06-18', {
+      checks: [
+        {
+          key: 'exercise',
+          done: true,
+          onToggle: vi.fn(),
+          idleLabel: 'Mark exercise done',
+          doneLabel: 'Exercise done',
+        },
+        {
+          key: 'pt',
+          done: false,
+          onToggle: vi.fn(),
+          idleLabel: 'Mark PT exercises done',
+          doneLabel: 'PT exercises done',
+        },
+      ],
+    })
+    expect(
+      screen.getByRole('button', { name: 'Exercise done' }),
+    ).toHaveAttribute('aria-pressed', 'true')
+    expect(
+      screen.getByRole('button', { name: 'Mark PT exercises done' }),
+    ).toHaveAttribute('aria-pressed', 'false')
   })
 })

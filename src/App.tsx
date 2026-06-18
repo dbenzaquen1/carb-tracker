@@ -3,7 +3,7 @@ import { isSupabaseConfigured, supabase } from './lib/supabase'
 import { addDays, lastNDays, todayISO } from './lib/dates'
 import { useAuth } from './hooks/useAuth'
 import { useEntries } from './hooks/useEntries'
-import { useExercise } from './hooks/useExercise'
+import { useDailyCheck } from './hooks/useDailyCheck'
 import { useProfile } from './hooks/useProfile'
 import { BottomNav, type Tab } from './components/BottomNav'
 import { ConfigNeeded } from './components/ConfigNeeded'
@@ -39,17 +39,62 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
   const earliest = lastNDays(30, today)[0]
   const fromDate = selectedDate < earliest ? selectedDate : earliest
 
-  const { goal, weeklyExerciseGoal, updateGoal, updateWeeklyExerciseGoal } =
-    useProfile(userId)
+  const {
+    goal,
+    weeklyExerciseGoal,
+    weeklyPtGoal,
+    updateGoal,
+    updateWeeklyExerciseGoal,
+    updateWeeklyPtGoal,
+  } = useProfile(userId)
   const { entries, loading, error, addEntry, updateEntry, deleteEntry } =
     useEntries(userId, fromDate, today)
-  const { exercisedDates, toggle: toggleExercise } = useExercise(
+  const { doneDates: exercisedDates, toggle: toggleExercise } = useDailyCheck(
     userId,
+    'exercise_days',
+    fromDate,
+    today,
+  )
+  const { doneDates: ptDates, toggle: togglePt } = useDailyCheck(
+    userId,
+    'pt_days',
     fromDate,
     today,
   )
 
   const dayEntries = entries.filter((e) => e.entry_date === selectedDate)
+
+  const dayChecks = [
+    {
+      key: 'exercise',
+      done: exercisedDates.has(selectedDate),
+      onToggle: () => toggleExercise(selectedDate),
+      idleLabel: 'Mark exercise done',
+      doneLabel: 'Exercise done',
+    },
+    {
+      key: 'pt',
+      done: ptDates.has(selectedDate),
+      onToggle: () => togglePt(selectedDate),
+      idleLabel: 'Mark PT exercises done',
+      doneLabel: 'PT exercises done',
+    },
+  ]
+
+  const weeklyChecks = [
+    {
+      key: 'exercise',
+      title: 'Exercise',
+      doneDates: exercisedDates,
+      goal: weeklyExerciseGoal,
+    },
+    {
+      key: 'pt',
+      title: 'PT exercises',
+      doneDates: ptDates,
+      goal: weeklyPtGoal,
+    },
+  ]
 
   function goToTab(next: Tab) {
     // Tapping the Today tab acts as a "home" button back to the current day.
@@ -93,8 +138,7 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
               onPrevDay={goPrevDay}
               onNextDay={goNextDay}
               onToday={() => setSelectedDate(today)}
-              exercised={exercisedDates.has(selectedDate)}
-              onToggleExercise={() => toggleExercise(selectedDate)}
+              checks={dayChecks}
             />
           ))}
 
@@ -106,8 +150,7 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
               entries={entries}
               goal={goal}
               today={today}
-              exercisedDates={exercisedDates}
-              weeklyExerciseGoal={weeklyExerciseGoal}
+              weeklyChecks={weeklyChecks}
             />
           ))}
 
@@ -115,10 +158,12 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
           <Settings
             goal={goal}
             weeklyExerciseGoal={weeklyExerciseGoal}
+            weeklyPtGoal={weeklyPtGoal}
             email={email}
             entries={entries}
             onSaveGoal={updateGoal}
             onSaveWeeklyExerciseGoal={updateWeeklyExerciseGoal}
+            onSaveWeeklyPtGoal={updateWeeklyPtGoal}
             onSignOut={handleSignOut}
           />
         )}
