@@ -13,6 +13,7 @@ function renderDay(date: string, today: string, overrides = {}) {
     goal: 150,
     entries: [] as Entry[],
     onAdd: noop,
+    onUpdate: noop,
     onDelete: noop,
     onPrevDay: vi.fn(),
     onNextDay: vi.fn(),

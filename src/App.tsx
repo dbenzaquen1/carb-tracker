@@ -39,11 +39,8 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
   const fromDate = selectedDate < earliest ? selectedDate : earliest
 
   const { goal, updateGoal } = useProfile(userId)
-  const { entries, loading, error, addEntry, deleteEntry } = useEntries(
-    userId,
-    fromDate,
-    today,
-  )
+  const { entries, loading, error, addEntry, updateEntry, deleteEntry } =
+    useEntries(userId, fromDate, today)
 
   const dayEntries = entries.filter((e) => e.entry_date === selectedDate)
 
@@ -84,6 +81,7 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
               goal={goal}
               entries={dayEntries}
               onAdd={addEntry}
+              onUpdate={updateEntry}
               onDelete={deleteEntry}
               onPrevDay={goPrevDay}
               onNextDay={goNextDay}
