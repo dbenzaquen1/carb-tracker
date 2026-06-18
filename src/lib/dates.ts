@@ -66,3 +66,16 @@ export function formatLong(iso: string): string {
     day: 'numeric',
   })
 }
+
+/**
+ * "Today" / "Yesterday" for the two most recent days, otherwise the full
+ * long-form date. Used as the heading when browsing days.
+ */
+export function relativeDayLabel(
+  iso: string,
+  today: string = todayISO(),
+): string {
+  if (iso === today) return 'Today'
+  if (iso === addDays(today, -1)) return 'Yesterday'
+  return formatLong(iso)
+}

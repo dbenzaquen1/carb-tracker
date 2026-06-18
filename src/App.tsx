@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { isSupabaseConfigured, supabase } from './lib/supabase'
-import { lastNDays, todayISO } from './lib/dates'
+import { addDays, lastNDays, todayISO } from './lib/dates'
 import { useAuth } from './hooks/useAuth'
 import { useEntries } from './hooks/useEntries'
 import { useProfile } from './hooks/useProfile'
@@ -30,8 +30,13 @@ export default function App() {
 
 function AuthedApp({ userId, email }: { userId: string; email: string }) {
   const today = todayISO()
-  const range = lastNDays(30, today)
-  const fromDate = range[0]
+  const [tab, setTab] = useState<Tab>('today')
+  const [selectedDate, setSelectedDate] = useState(today)
+
+  // Load at least the last 30 days (for metrics), and widen the window back to
+  // the selected day if the user browses further into the past.
+  const earliest = lastNDays(30, today)[0]
+  const fromDate = selectedDate < earliest ? selectedDate : earliest
 
   const { goal, updateGoal } = useProfile(userId)
   const { entries, loading, error, addEntry, deleteEntry } = useEntries(
@@ -39,9 +44,22 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
     fromDate,
     today,
   )
-  const [tab, setTab] = useState<Tab>('today')
 
-  const todaysEntries = entries.filter((e) => e.entry_date === today)
+  const dayEntries = entries.filter((e) => e.entry_date === selectedDate)
+
+  function goToTab(next: Tab) {
+    // Tapping the Today tab acts as a "home" button back to the current day.
+    if (next === 'today') setSelectedDate(today)
+    setTab(next)
+  }
+
+  function goPrevDay() {
+    setSelectedDate((d) => addDays(d, -1))
+  }
+
+  function goNextDay() {
+    setSelectedDate((d) => (d >= today ? d : addDays(d, 1)))
+  }
 
   async function handleSignOut() {
     await supabase?.auth.signOut()
@@ -61,11 +79,15 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
             <Spinner />
           ) : (
             <Today
-              date={today}
+              date={selectedDate}
+              today={today}
               goal={goal}
-              entries={todaysEntries}
+              entries={dayEntries}
               onAdd={addEntry}
               onDelete={deleteEntry}
+              onPrevDay={goPrevDay}
+              onNextDay={goNextDay}
+              onToday={() => setSelectedDate(today)}
             />
           ))}
 
@@ -87,7 +109,7 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
         )}
       </main>
 
-      <BottomNav active={tab} onChange={setTab} />
+      <BottomNav active={tab} onChange={goToTab} />
     </div>
   )
 }

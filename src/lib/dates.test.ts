@@ -1,8 +1,10 @@
 import { describe, it, expect } from 'vitest'
 import {
   addDays,
+  formatLong,
   lastNDays,
   parseISODate,
+  relativeDayLabel,
   toISODate,
   todayISO,
   weekdayLabel,
@@ -65,5 +67,21 @@ describe('labels', () => {
 
   it('formatShort combines weekday and month/day', () => {
     expect(formatShort('2026-06-18')).toBe('Thu 6/18')
+  })
+})
+
+describe('relativeDayLabel', () => {
+  const today = '2026-06-18'
+
+  it('labels the current day as Today', () => {
+    expect(relativeDayLabel(today, today)).toBe('Today')
+  })
+
+  it('labels the previous day as Yesterday', () => {
+    expect(relativeDayLabel('2026-06-17', today)).toBe('Yesterday')
+  })
+
+  it('falls back to the long date for older days', () => {
+    expect(relativeDayLabel('2026-06-15', today)).toBe(formatLong('2026-06-15'))
   })
 })
