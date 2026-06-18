@@ -283,7 +283,7 @@ h3 {
 }
 .add-form__row {
   display: grid;
-  grid-template-columns: 1fr 6rem auto;
+  grid-template-columns: 1fr 5rem auto;
   gap: 0.4rem;
 }
 .add-form input {
@@ -291,9 +291,14 @@ h3 {
   padding: 0.7rem 0.75rem;
   border: 1px solid var(--border);
   border-radius: 10px;
+  /* Allow the inputs to shrink so the grid never overflows narrow screens
+     (form controls have an intrinsic min-width that otherwise pushes the
+     Add button off-screen). */
+  min-width: 0;
 }
 .add-form__submit {
-  padding-inline: 1.1rem;
+  padding-inline: 1rem;
+  white-space: nowrap;
 }
 
 /* ---------- Entry list ---------- */
