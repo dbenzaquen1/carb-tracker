@@ -2,8 +2,17 @@ import { sumCarbs } from '../lib/carbs'
 import { relativeDayLabel } from '../lib/dates'
 import type { Entry, NewEntry } from '../types'
 import { AddEntryForm } from './AddEntryForm'
+import { DailyCheckToggle } from './DailyCheckToggle'
 import { EntryList } from './EntryList'
 import { SummaryRing } from './SummaryRing'
+
+export interface DayCheck {
+  key: string
+  done: boolean
+  onToggle: () => void
+  idleLabel: string
+  doneLabel: string
+}
 
 interface Props {
   /** The day currently being viewed (YYYY-MM-DD). */
@@ -21,8 +30,8 @@ interface Props {
   onPrevDay: () => void
   onNextDay: () => void
   onToday: () => void
-  exercised: boolean
-  onToggleExercise: () => void
+  /** Daily check-offs (exercise, PT, …) for the selected day. */
+  checks: DayCheck[]
 }
 
 /**
@@ -40,8 +49,7 @@ export function Today({
   onPrevDay,
   onNextDay,
   onToday,
-  exercised,
-  onToggleExercise,
+  checks,
 }: Props) {
   const consumed = sumCarbs(entries)
   const isToday = date === today
@@ -78,19 +86,19 @@ export function Today({
 
       <SummaryRing consumed={consumed} goal={goal} />
 
-      <button
-        type="button"
-        className={`exercise-toggle ${exercised ? 'is-done' : ''}`}
-        aria-pressed={exercised}
-        onClick={onToggleExercise}
-      >
-        <span className="exercise-toggle__box" aria-hidden="true">
-          {exercised ? '✓' : ''}
-        </span>
-        <span className="exercise-toggle__label">
-          {exercised ? 'Exercise done' : 'Mark exercise done'}
-        </span>
-      </button>
+      {checks.length > 0 && (
+        <div className="day-checks">
+          {checks.map((check) => (
+            <DailyCheckToggle
+              key={check.key}
+              done={check.done}
+              onToggle={check.onToggle}
+              idleLabel={check.idleLabel}
+              doneLabel={check.doneLabel}
+            />
+          ))}
+        </div>
+      )}
 
       <AddEntryForm date={date} onAdd={onAdd} />
 

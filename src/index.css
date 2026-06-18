@@ -253,7 +253,13 @@ h3 {
   color: var(--red);
 }
 
-/* ---------- Exercise toggle (Today) ---------- */
+/* ---------- Daily check toggles (Today) ---------- */
+.day-checks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 1.25rem;
+}
 .exercise-toggle {
   display: flex;
   align-items: center;
@@ -264,7 +270,6 @@ h3 {
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   padding: 0.85rem;
-  margin-bottom: 1.25rem;
   font-size: 1rem;
   font-weight: 600;
   color: var(--text);

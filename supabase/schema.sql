@@ -13,13 +13,17 @@ create table if not exists public.profiles (
   daily_goal integer not null default 150 check (daily_goal > 0),
   weekly_exercise_goal integer not null default 5
     check (weekly_exercise_goal > 0),
+  weekly_pt_goal integer not null default 7 check (weekly_pt_goal > 0),
   updated_at timestamptz not null default now()
 );
 
--- If profiles already exists from an earlier version, add the new column.
+-- If profiles already exists from an earlier version, add the new columns.
 alter table public.profiles
   add column if not exists weekly_exercise_goal integer not null default 5
     check (weekly_exercise_goal > 0);
+alter table public.profiles
+  add column if not exists weekly_pt_goal integer not null default 7
+    check (weekly_pt_goal > 0);
 
 -- One row per logged food item.
 create table if not exists public.entries (
@@ -45,6 +49,14 @@ create table if not exists public.exercise_days (
   primary key (user_id, entry_date)
 );
 
+-- Same idea for physical-therapy exercises (a separate daily check-off).
+create table if not exists public.pt_days (
+  user_id uuid not null references auth.users (id) on delete cascade,
+  entry_date date not null,
+  created_at timestamptz not null default now(),
+  primary key (user_id, entry_date)
+);
+
 -- ---------------------------------------------------------------------------
 -- Row Level Security: each user can only see and modify their own rows.
 -- ---------------------------------------------------------------------------
@@ -52,6 +64,7 @@ create table if not exists public.exercise_days (
 alter table public.profiles enable row level security;
 alter table public.entries enable row level security;
 alter table public.exercise_days enable row level security;
+alter table public.pt_days enable row level security;
 
 drop policy if exists "Users manage own profile" on public.profiles;
 create policy "Users manage own profile" on public.profiles
@@ -67,6 +80,12 @@ create policy "Users manage own entries" on public.entries
 
 drop policy if exists "Users manage own exercise days" on public.exercise_days;
 create policy "Users manage own exercise days" on public.exercise_days
+  for all
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+drop policy if exists "Users manage own pt days" on public.pt_days;
+create policy "Users manage own pt days" on public.pt_days
   for all
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);

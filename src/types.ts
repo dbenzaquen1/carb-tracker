@@ -35,3 +35,6 @@ export const DEFAULT_DAILY_GOAL = 150
 
 /** Default number of days per week the user aims to exercise. */
 export const DEFAULT_WEEKLY_EXERCISE_GOAL = 5
+
+/** Default number of days per week the user aims to do PT exercises. */
+export const DEFAULT_WEEKLY_PT_GOAL = 7

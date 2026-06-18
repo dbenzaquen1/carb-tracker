@@ -5,26 +5,32 @@ import type { Entry } from '../types'
 interface Props {
   goal: number
   weeklyExerciseGoal: number
+  weeklyPtGoal: number
   email: string
   entries: Entry[]
   onSaveGoal: (goal: number) => void | Promise<void>
   onSaveWeeklyExerciseGoal: (goal: number) => void | Promise<void>
+  onSaveWeeklyPtGoal: (goal: number) => void | Promise<void>
   onSignOut: () => void | Promise<void>
 }
 
 export function Settings({
   goal,
   weeklyExerciseGoal,
+  weeklyPtGoal,
   email,
   entries,
   onSaveGoal,
   onSaveWeeklyExerciseGoal,
+  onSaveWeeklyPtGoal,
   onSignOut,
 }: Props) {
   const [value, setValue] = useState(String(goal))
   const [saved, setSaved] = useState(false)
   const [exerciseValue, setExerciseValue] = useState(String(weeklyExerciseGoal))
   const [exerciseSaved, setExerciseSaved] = useState(false)
+  const [ptValue, setPtValue] = useState(String(weeklyPtGoal))
+  const [ptSaved, setPtSaved] = useState(false)
 
   useEffect(() => {
     setValue(String(goal))
@@ -34,12 +40,19 @@ export function Settings({
     setExerciseValue(String(weeklyExerciseGoal))
   }, [weeklyExerciseGoal])
 
+  useEffect(() => {
+    setPtValue(String(weeklyPtGoal))
+  }, [weeklyPtGoal])
+
   const parsed = Number(value)
   const isValid = Number.isFinite(parsed) && parsed > 0
 
   const exerciseParsed = Number(exerciseValue)
   const isExerciseValid =
     Number.isFinite(exerciseParsed) && exerciseParsed > 0 && exerciseParsed <= 7
+
+  const ptParsed = Number(ptValue)
+  const isPtValid = Number.isFinite(ptParsed) && ptParsed > 0 && ptParsed <= 7
 
   async function handleSave() {
     if (!isValid) return
@@ -53,6 +66,13 @@ export function Settings({
     await onSaveWeeklyExerciseGoal(Math.round(exerciseParsed))
     setExerciseSaved(true)
     setTimeout(() => setExerciseSaved(false), 1500)
+  }
+
+  async function handleSavePt() {
+    if (!isPtValid) return
+    await onSaveWeeklyPtGoal(Math.round(ptParsed))
+    setPtSaved(true)
+    setTimeout(() => setPtSaved(false), 1500)
   }
 
   function handleExport() {
@@ -109,6 +129,27 @@ export function Settings({
           disabled={!isExerciseValid}
         >
           {exerciseSaved ? 'Saved ✓' : 'Save exercise goal'}
+        </button>
+      </section>
+
+      <section className="settings__section">
+        <label className="field">
+          <span>Weekly PT exercises goal (days)</span>
+          <input
+            type="number"
+            inputMode="numeric"
+            min="1"
+            max="7"
+            value={ptValue}
+            onChange={(e) => setPtValue(e.target.value)}
+          />
+        </label>
+        <button
+          className="btn btn--primary"
+          onClick={handleSavePt}
+          disabled={!isPtValid}
+        >
+          {ptSaved ? 'Saved ✓' : 'Save PT goal'}
         </button>
       </section>
 
