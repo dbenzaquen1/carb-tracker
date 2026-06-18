@@ -1,4 +1,4 @@
-import { formatShort, lastNDays, weekdayLabel } from '../lib/dates'
+import { formatShort, lastNDays, weekDates, weekdayLabel } from '../lib/dates'
 import {
   averagePerLoggedDay,
   dailyTotals,
@@ -55,7 +55,9 @@ export function Metrics({
   const logged7 = loggedDayCount(daily7)
   const peak = highestDay(daily30)
 
-  const exercisedThisWeek = countExercised(last7, exercisedDates)
+  // Exercise "this week" follows the calendar week (Sunday–Saturday).
+  const weekDays = weekDates(today)
+  const exercisedThisWeek = countExercised(weekDays, exercisedDates)
   const exerciseWeeklyAvg = weeklyAverage(lastNDays(30, today), exercisedDates)
   const metExerciseGoal = exercisedThisWeek >= weeklyExerciseGoal
   const exercisePct = Math.min(
@@ -107,13 +109,23 @@ export function Metrics({
             style={{ width: `${exercisePct}%` }}
           />
         </div>
-        <div className="exercise-week" aria-label="Last 7 days of exercise">
-          {last7.map((date) => {
+        <div
+          className="exercise-week"
+          aria-label="This week's exercise (Sunday to Saturday)"
+        >
+          {weekDays.map((date) => {
             const done = exercisedDates.has(date)
+            const isFuture = date > today
+            const isToday = date === today
             return (
-              <div className="exercise-week__day" key={date}>
+              <div
+                className={`exercise-week__day ${isFuture ? 'is-future' : ''}`}
+                key={date}
+              >
                 <span
-                  className={`exercise-week__dot ${done ? 'is-done' : ''}`}
+                  className={`exercise-week__dot ${done ? 'is-done' : ''} ${
+                    isToday ? 'is-today' : ''
+                  }`}
                   aria-hidden="true"
                 >
                   {done ? '✓' : ''}

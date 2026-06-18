@@ -52,6 +52,17 @@ export function weekdayLabel(iso: string): string {
   return WEEKDAYS[parseISODate(iso).getDay()]
 }
 
+/** The Sunday on or before `iso` (i.e. the start of its week, Sunday-based). */
+export function startOfWeekSunday(iso: string): string {
+  return addDays(iso, -parseISODate(iso).getDay())
+}
+
+/** The 7 dates of the Sunday-based week containing `iso`, ordered Sun → Sat. */
+export function weekDates(iso: string): string[] {
+  const start = startOfWeekSunday(iso)
+  return Array.from({ length: 7 }, (_, i) => addDays(start, i))
+}
+
 /** Compact label for charts/lists, e.g. "Mon 6/18". */
 export function formatShort(iso: string): string {
   const d = parseISODate(iso)

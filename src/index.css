@@ -603,6 +603,12 @@ h3 {
 .exercise-week__dot.is-done {
   background: var(--green);
 }
+.exercise-week__dot.is-today {
+  box-shadow: 0 0 0 2px var(--green);
+}
+.exercise-week__day.is-future {
+  opacity: 0.4;
+}
 .exercise-week__label {
   font-size: 0.72rem;
   color: var(--muted);
