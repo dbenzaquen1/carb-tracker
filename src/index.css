@@ -641,6 +641,120 @@ h3 {
   margin: 0;
 }
 
+/* ---------- Admin dashboard ---------- */
+.admin__search {
+  width: 100%;
+  font-size: 1rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--text);
+  margin-bottom: 1rem;
+}
+.admin__search:focus {
+  outline: 2px solid var(--green);
+  outline-offset: 1px;
+}
+.admin__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+.admin__user {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  width: 100%;
+  text-align: left;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 0.85rem;
+}
+.admin__user.is-open {
+  border-color: var(--green);
+}
+.admin__email {
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.admin__badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--green-dark);
+  background: var(--green-soft);
+  border-radius: 999px;
+  padding: 0.1rem 0.45rem;
+}
+.admin__summary {
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+.admin__detail {
+  padding: 0.9rem 0.2rem 0.2rem;
+}
+.admin__meta {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0 0 0.8rem;
+}
+.admin__flags {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.admin__flag {
+  flex: 1;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.5rem;
+}
+.admin__flag.is-done {
+  color: var(--green-dark);
+  background: var(--green-soft);
+  border-color: var(--green);
+}
+.admin__meal {
+  margin-top: 0.6rem;
+}
+.admin__meal-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: var(--green-dark);
+  margin-bottom: 0.2rem;
+}
+.admin__meal-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.admin__meal-items li {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.25rem 0;
+  border-top: 1px solid var(--border);
+}
+.admin__entry-carbs {
+  color: var(--muted);
+  font-weight: 600;
+}
+
 /* ---------- Bottom nav ---------- */
 .bottom-nav {
   position: fixed;
