@@ -4,7 +4,9 @@ import { addDays, lastNDays, todayISO } from './lib/dates'
 import { useAuth } from './hooks/useAuth'
 import { useEntries } from './hooks/useEntries'
 import { useDailyCheck } from './hooks/useDailyCheck'
+import { useAdminData } from './hooks/useAdminData'
 import { useProfile } from './hooks/useProfile'
+import { AdminView } from './components/AdminView'
 import { BottomNav, type Tab } from './components/BottomNav'
 import { ConfigNeeded } from './components/ConfigNeeded'
 import { Login } from './components/Login'
@@ -43,12 +45,18 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
     goal,
     weeklyExerciseGoal,
     weeklyPtGoal,
+    isAdmin,
     updateGoal,
     updateWeeklyExerciseGoal,
     updateWeeklyPtGoal,
   } = useProfile(userId)
   const { entries, loading, error, addEntry, updateEntry, deleteEntry } =
     useEntries(userId, fromDate, today)
+  const {
+    users: adminUsers,
+    loading: adminLoading,
+    error: adminError,
+  } = useAdminData(isAdmin, earliest, today)
   const { doneDates: exercisedDates, toggle: toggleExercise } = useDailyCheck(
     userId,
     'exercise_days',
@@ -154,6 +162,15 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
             />
           ))}
 
+        {tab === 'admin' && isAdmin && (
+          <AdminView
+            users={adminUsers}
+            today={today}
+            loading={adminLoading}
+            error={adminError}
+          />
+        )}
+
         {tab === 'settings' && (
           <Settings
             goal={goal}
@@ -169,7 +186,7 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
         )}
       </main>
 
-      <BottomNav active={tab} onChange={goToTab} />
+      <BottomNav active={tab} onChange={goToTab} isAdmin={isAdmin} />
     </div>
   )
 }

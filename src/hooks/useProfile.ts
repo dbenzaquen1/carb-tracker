@@ -10,6 +10,7 @@ export interface ProfileState {
   goal: number
   weeklyExerciseGoal: number
   weeklyPtGoal: number
+  isAdmin: boolean
   loading: boolean
   updateGoal: (newGoal: number) => Promise<void>
   updateWeeklyExerciseGoal: (newGoal: number) => Promise<void>
@@ -23,6 +24,7 @@ export function useProfile(userId: string | undefined): ProfileState {
     DEFAULT_WEEKLY_EXERCISE_GOAL,
   )
   const [weeklyPtGoal, setWeeklyPtGoal] = useState(DEFAULT_WEEKLY_PT_GOAL)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -34,7 +36,7 @@ export function useProfile(userId: string | undefined): ProfileState {
     setLoading(true)
     supabase
       .from('profiles')
-      .select('daily_goal, weekly_exercise_goal, weekly_pt_goal')
+      .select('daily_goal, weekly_exercise_goal, weekly_pt_goal, is_admin')
       .eq('id', userId)
       .maybeSingle()
       .then(({ data }) => {
@@ -47,6 +49,7 @@ export function useProfile(userId: string | undefined): ProfileState {
           if (data.weekly_pt_goal != null) {
             setWeeklyPtGoal(data.weekly_pt_goal)
           }
+          setIsAdmin(Boolean(data.is_admin))
         }
         setLoading(false)
       })
@@ -98,6 +101,7 @@ export function useProfile(userId: string | undefined): ProfileState {
     goal,
     weeklyExerciseGoal,
     weeklyPtGoal,
+    isAdmin,
     loading,
     updateGoal,
     updateWeeklyExerciseGoal,

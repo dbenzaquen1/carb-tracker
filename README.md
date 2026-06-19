@@ -127,6 +127,25 @@ Open the deployed URL in Chrome (Android) or Safari (iOS) and choose
 **Add to Home Screen**. The app then launches fullscreen with its own icon and
 works offline for viewing previously loaded data.
 
+## Admin dashboard (optional)
+
+An admin can see a read-only overview of every user (today's carbs vs. goal,
+trends, exercise/PT compliance, and recent entries) with search by email.
+
+Access is enforced entirely by Row Level Security — admins read all rows, but
+everyone can still only write their own. **No service-role key is used in the
+app.** To grant yourself access:
+
+1. Make sure the [`supabase/migrations`](supabase/migrations) have been applied
+   (they add the `is_admin` flag and admin read policies).
+2. Sign in to the app once so your profile exists, then run in the SQL editor:
+
+   ```sql
+   update public.profiles set is_admin = true where email = 'you@example.com';
+   ```
+
+3. Reload the app — an **Admin** tab appears in the bottom nav.
+
 ## Project structure
 
 ```
