@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { isSupabaseConfigured, supabase } from './lib/supabase'
 import { addDays, lastNDays, todayISO } from './lib/dates'
+import { dedupePastFoods } from './lib/suggestions'
 import { useAuth } from './hooks/useAuth'
 import { useEntries } from './hooks/useEntries'
 import { useDailyCheck } from './hooks/useDailyCheck'
@@ -71,6 +72,7 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
   )
 
   const dayEntries = entries.filter((e) => e.entry_date === selectedDate)
+  const pastFoods = dedupePastFoods(entries)
 
   const dayChecks = [
     {
@@ -140,6 +142,7 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
               today={today}
               goal={goal}
               entries={dayEntries}
+              pastFoods={pastFoods}
               onAdd={addEntry}
               onUpdate={updateEntry}
               onDelete={deleteEntry}
