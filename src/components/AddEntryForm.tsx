@@ -1,18 +1,26 @@
 import { useState, type FormEvent } from 'react'
 import { MEALS, MEAL_LABELS, type Meal, type NewEntry } from '../types'
 import { suggestedMeal } from '../lib/meals'
+import { filterPastFoods, type PastFood } from '../lib/suggestions'
 
 interface Props {
   date: string
   onAdd: (entry: NewEntry) => void | Promise<void>
+  /** Previously logged foods, newest first, for the autocomplete dropdown. */
+  pastFoods?: PastFood[]
 }
 
-/** Form for logging a food item: name, carbs (g), and meal. */
-export function AddEntryForm({ date, onAdd }: Props) {
+/**
+ * Form for logging a food item: name, carbs (g), and meal. Typing (or focusing)
+ * the name field shows a dropdown of previously logged foods; picking one fills
+ * in its carbs, which stay editable.
+ */
+export function AddEntryForm({ date, onAdd, pastFoods = [] }: Props) {
   const [name, setName] = useState('')
   const [carbs, setCarbs] = useState('')
   const [meal, setMeal] = useState<Meal>(() => suggestedMeal())
   const [busy, setBusy] = useState(false)
+  const [focused, setFocused] = useState(false)
 
   const carbsValue = Number(carbs)
   const isValid =
@@ -20,6 +28,14 @@ export function AddEntryForm({ date, onAdd }: Props) {
     carbs.trim() !== '' &&
     Number.isFinite(carbsValue) &&
     carbsValue >= 0
+
+  const suggestions = focused ? filterPastFoods(pastFoods, name) : []
+
+  function selectFood(food: PastFood) {
+    setName(food.name)
+    setCarbs(String(food.carbs))
+    setFocused(false)
+  }
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
@@ -53,14 +69,52 @@ export function AddEntryForm({ date, onAdd }: Props) {
       </div>
 
       <div className="add-form__row">
-        <input
-          className="add-form__name"
-          type="text"
-          aria-label="Food name"
-          placeholder="e.g. Banana"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
+        <div className="combobox">
+          <input
+            className="add-form__name"
+            type="text"
+            aria-label="Food name"
+            placeholder="e.g. Banana"
+            value={name}
+            autoComplete="off"
+            role="combobox"
+            aria-expanded={suggestions.length > 0}
+            aria-controls="past-food-suggestions"
+            onChange={(e) => {
+              setName(e.target.value)
+              setFocused(true)
+            }}
+            onFocus={() => setFocused(true)}
+            onBlur={() => window.setTimeout(() => setFocused(false), 150)}
+          />
+          {suggestions.length > 0 && (
+            <ul
+              className="combobox__list"
+              id="past-food-suggestions"
+              role="listbox"
+              aria-label="Recent foods"
+            >
+              {suggestions.map((food) => (
+                <li key={food.name}>
+                  <button
+                    type="button"
+                    className="combobox__option"
+                    role="option"
+                    aria-selected="false"
+                    onMouseDown={(e) => {
+                      e.preventDefault()
+                      selectFood(food)
+                    }}
+                  >
+                    <span className="combobox__name">{food.name}</span>
+                    <span className="combobox__carbs">{food.carbs} g</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
         <input
           className="add-form__carbs"
           type="number"

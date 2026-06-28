@@ -344,6 +344,61 @@ h3 {
   white-space: nowrap;
 }
 
+/* Past-food autocomplete */
+.combobox {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+.combobox .add-form__name {
+  width: 100%;
+}
+.combobox__list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  max-height: 240px;
+  overflow-y: auto;
+}
+.combobox__option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+.combobox__option:hover,
+.combobox__option:focus {
+  background: var(--green-soft);
+}
+.combobox__name {
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.combobox__carbs {
+  font-weight: 700;
+  color: var(--green-dark);
+  white-space: nowrap;
+}
+
 /* ---------- Entry list ---------- */
 .entry-list {
   display: flex;

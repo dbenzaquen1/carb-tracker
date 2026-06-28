@@ -12,6 +12,7 @@ function renderDay(date: string, today: string, overrides = {}) {
     today,
     goal: 150,
     entries: [] as Entry[],
+    pastFoods: [],
     onAdd: noop,
     onUpdate: noop,
     onDelete: noop,

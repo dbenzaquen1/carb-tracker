@@ -1,5 +1,6 @@
 import { sumCarbs } from '../lib/carbs'
 import { relativeDayLabel } from '../lib/dates'
+import type { PastFood } from '../lib/suggestions'
 import type { Entry, NewEntry } from '../types'
 import { AddEntryForm } from './AddEntryForm'
 import { DailyCheckToggle } from './DailyCheckToggle'
@@ -21,6 +22,7 @@ interface Props {
   today: string
   goal: number
   entries: Entry[]
+  pastFoods: PastFood[]
   onAdd: (entry: NewEntry) => void | Promise<void>
   onUpdate: (
     id: string,
@@ -43,6 +45,7 @@ export function Today({
   today,
   goal,
   entries,
+  pastFoods,
   onAdd,
   onUpdate,
   onDelete,
@@ -100,7 +103,7 @@ export function Today({
         </div>
       )}
 
-      <AddEntryForm date={date} onAdd={onAdd} />
+      <AddEntryForm date={date} onAdd={onAdd} pastFoods={pastFoods} />
 
       {entries.length === 0 ? (
         <p className="empty">
