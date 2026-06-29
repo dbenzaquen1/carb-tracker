@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { isSupabaseConfigured, supabase } from './lib/supabase'
 import { addDays, lastNDays, todayISO } from './lib/dates'
 import { dedupePastFoods } from './lib/suggestions'
+import { applyTheme, getStoredTheme } from './lib/theme'
 import { useAuth } from './hooks/useAuth'
 import { useEntries } from './hooks/useEntries'
 import { useDailyCheck } from './hooks/useDailyCheck'
@@ -18,6 +19,17 @@ import { Today } from './components/Today'
 
 export default function App() {
   const { user, loading } = useAuth()
+
+  // Keep "System" theme in sync if the OS appearance changes while open.
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return
+    const media = window.matchMedia('(prefers-color-scheme: dark)')
+    const onChange = () => {
+      if (getStoredTheme() === 'system') applyTheme('system')
+    }
+    media.addEventListener('change', onChange)
+    return () => media.removeEventListener('change', onChange)
+  }, [])
 
   if (!isSupabaseConfigured) return <ConfigNeeded />
   if (loading) {
