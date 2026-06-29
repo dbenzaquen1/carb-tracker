@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react'
 import { todayISO } from '../lib/dates'
+import { applyTheme, getStoredTheme, type ThemePref } from '../lib/theme'
 import type { Entry } from '../types'
+
+const THEME_OPTIONS: { value: ThemePref; label: string }[] = [
+  { value: 'system', label: 'System' },
+  { value: 'light', label: 'Light' },
+  { value: 'dark', label: 'Dark' },
+]
 
 interface Props {
   goal: number
@@ -27,6 +34,7 @@ export function Settings({
 }: Props) {
   const [value, setValue] = useState(String(goal))
   const [saved, setSaved] = useState(false)
+  const [theme, setTheme] = useState<ThemePref>(() => getStoredTheme())
   const [exerciseValue, setExerciseValue] = useState(String(weeklyExerciseGoal))
   const [exerciseSaved, setExerciseSaved] = useState(false)
   const [ptValue, setPtValue] = useState(String(weeklyPtGoal))
@@ -87,9 +95,33 @@ export function Settings({
     URL.revokeObjectURL(url)
   }
 
+  function handleSelectTheme(next: ThemePref) {
+    setTheme(next)
+    applyTheme(next)
+  }
+
   return (
     <div className="view settings">
       <h2 className="view__title">Settings</h2>
+
+      <section className="settings__section">
+        <h3>Appearance</h3>
+        <div className="theme-picker" role="group" aria-label="Theme">
+          {THEME_OPTIONS.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              className={`theme-picker__btn ${
+                theme === option.value ? 'is-active' : ''
+              }`}
+              aria-pressed={theme === option.value}
+              onClick={() => handleSelectTheme(option.value)}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      </section>
 
       <section className="settings__section">
         <label className="field">
