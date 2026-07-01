@@ -178,6 +178,27 @@ h3 {
   font-size: 1.3rem;
   margin-bottom: 1rem;
 }
+
+.period-picker {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+.period-picker__btn {
+  border: 1px solid var(--border);
+  background: var(--input-bg);
+  border-radius: 10px;
+  padding: 0.5rem 0.25rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.period-picker__btn.is-active {
+  background: var(--green-soft);
+  border-color: var(--green);
+  color: var(--green-dark);
+}
 .empty {
   color: var(--muted);
   text-align: center;
@@ -233,6 +254,19 @@ h3 {
   font-weight: 600;
   text-decoration: underline;
   padding: 0;
+}
+.day-nav__date {
+  border: 1px solid var(--border);
+  background: var(--input-bg);
+  color: var(--text);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.78rem;
+  padding: 0.15rem 0.4rem;
+}
+.day-nav__date:focus {
+  outline: 2px solid var(--green);
+  outline-offset: 1px;
 }
 
 .ring {

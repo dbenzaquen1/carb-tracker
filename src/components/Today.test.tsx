@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { Entry } from '../types'
 import { Today } from './Today'
@@ -19,6 +19,7 @@ function renderDay(date: string, today: string, overrides = {}) {
     onPrevDay: vi.fn(),
     onNextDay: vi.fn(),
     onToday: vi.fn(),
+    onPickDate: vi.fn(),
     checks: [],
     ...overrides,
   }
@@ -40,6 +41,14 @@ describe('Today day navigation', () => {
     const props = renderDay('2026-06-18', '2026-06-18')
     await user.click(screen.getByRole('button', { name: 'Previous day' }))
     expect(props.onPrevDay).toHaveBeenCalledTimes(1)
+  })
+
+  it('jumps to a date chosen in the date picker', () => {
+    const props = renderDay('2026-06-28', '2026-06-28')
+    fireEvent.change(screen.getByLabelText('Jump to date'), {
+      target: { value: '2026-05-01' },
+    })
+    expect(props.onPickDate).toHaveBeenCalledWith('2026-05-01')
   })
 
   it('shows Yesterday and lets you jump back to today on a past day', async () => {

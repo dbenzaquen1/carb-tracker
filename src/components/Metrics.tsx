@@ -17,11 +17,20 @@ export interface WeeklyCheck {
   goal: number
 }
 
+const HISTORY_PERIODS: { days: number; label: string }[] = [
+  { days: 30, label: '30 days' },
+  { days: 90, label: '90 days' },
+  { days: 365, label: '1 year' },
+]
+
 interface Props {
   entries: Entry[]
   goal: number
   today: string
   weeklyChecks: WeeklyCheck[]
+  /** How far back the carb stats summarize. */
+  periodDays: number
+  onChangePeriod: (days: number) => void
 }
 
 function StatCard({
@@ -42,33 +51,59 @@ function StatCard({
   )
 }
 
-/** Trends view: carb averages, a 14-day chart, and weekly check-off cards. */
-export function Metrics({ entries, goal, today, weeklyChecks }: Props) {
-  const daily7 = dailyTotals(entries, lastNDays(7, today))
-  const daily14 = dailyTotals(entries, lastNDays(14, today))
-  const daily30 = dailyTotals(entries, lastNDays(30, today))
+/** Trends view: carb averages over a selectable period, a recent chart, and
+ * weekly check-off cards. */
+export function Metrics({
+  entries,
+  goal,
+  today,
+  weeklyChecks,
+  periodDays,
+  onChangePeriod,
+}: Props) {
+  const periodLabel =
+    HISTORY_PERIODS.find((p) => p.days === periodDays)?.label ??
+    `${periodDays} days`
 
-  const avg7 = averagePerLoggedDay(daily7)
-  const avg30 = averagePerLoggedDay(daily30)
-  const within7 = daysWithinGoal(daily7, goal)
-  const logged7 = loggedDayCount(daily7)
-  const peak = highestDay(daily30)
+  const period = dailyTotals(entries, lastNDays(periodDays, today))
+  const daily14 = dailyTotals(entries, lastNDays(14, today))
+
+  const avg = averagePerLoggedDay(period)
+  const within = daysWithinGoal(period, goal)
+  const logged = loggedDayCount(period)
+  const peak = highestDay(period)
 
   return (
     <div className="view metrics">
       <h2 className="view__title">Your trends</h2>
 
+      <div className="period-picker" role="group" aria-label="History period">
+        {HISTORY_PERIODS.map((p) => (
+          <button
+            key={p.days}
+            type="button"
+            className={`period-picker__btn ${
+              periodDays === p.days ? 'is-active' : ''
+            }`}
+            aria-pressed={periodDays === p.days}
+            onClick={() => onChangePeriod(p.days)}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
+
       <div className="stats">
-        <StatCard label="7-day avg" value={`${avg7} g`} sub="per logged day" />
-        <StatCard
-          label="30-day avg"
-          value={`${avg30} g`}
-          sub="per logged day"
-        />
+        <StatCard label="Avg / day" value={`${avg} g`} sub="per logged day" />
         <StatCard
           label="On target"
-          value={`${within7}/${logged7}`}
-          sub="last 7 logged"
+          value={`${within}/${logged}`}
+          sub="logged days"
+        />
+        <StatCard
+          label="Logged"
+          value={`${logged}`}
+          sub={`in ${periodLabel}`}
         />
         <StatCard label="Goal" value={`${goal} g`} sub="daily target" />
       </div>
@@ -95,12 +130,13 @@ export function Metrics({ entries, goal, today, weeklyChecks }: Props) {
 
       {peak ? (
         <p className="metrics__note">
-          Highest day in the last 30: <strong>{peak.total} g</strong> on{' '}
-          {formatShort(peak.date)}.
+          Highest day in the last {periodLabel}: <strong>{peak.total} g</strong>{' '}
+          on {formatShort(peak.date)}.
         </p>
       ) : (
         <p className="empty">
-          No data yet. Log a few days and your trends will appear here.
+          No data yet for this period. Log some days and your trends appear
+          here.
         </p>
       )}
     </div>
