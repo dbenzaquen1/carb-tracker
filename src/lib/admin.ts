@@ -7,6 +7,7 @@ export interface AdminProfileRow {
   daily_goal: number
   weekly_exercise_goal: number
   weekly_pt_goal: number
+  weekly_skin_cream_goal: number
   is_admin: boolean
 }
 
@@ -22,10 +23,12 @@ export interface AdminUser {
   dailyGoal: number
   weeklyExerciseGoal: number
   weeklyPtGoal: number
+  weeklySkinCreamGoal: number
   isAdmin: boolean
   entries: Entry[]
   exercisedDates: Set<string>
   ptDates: Set<string>
+  skinCreamDates: Set<string>
 }
 
 function datesByUser(rows: DayRow[]): Map<string, Set<string>> {
@@ -44,6 +47,7 @@ export function buildAdminUsers(
   entries: Entry[],
   exerciseRows: DayRow[],
   ptRows: DayRow[],
+  skinCreamRows: DayRow[],
 ): AdminUser[] {
   const entriesByUser = new Map<string, Entry[]>()
   for (const entry of entries) {
@@ -53,6 +57,7 @@ export function buildAdminUsers(
   }
   const exercise = datesByUser(exerciseRows)
   const pt = datesByUser(ptRows)
+  const skinCream = datesByUser(skinCreamRows)
 
   return profiles.map((p) => ({
     id: p.id,
@@ -60,10 +65,12 @@ export function buildAdminUsers(
     dailyGoal: p.daily_goal,
     weeklyExerciseGoal: p.weekly_exercise_goal,
     weeklyPtGoal: p.weekly_pt_goal,
+    weeklySkinCreamGoal: p.weekly_skin_cream_goal,
     isAdmin: p.is_admin,
     entries: entriesByUser.get(p.id) ?? [],
     exercisedDates: exercise.get(p.id) ?? new Set<string>(),
     ptDates: pt.get(p.id) ?? new Set<string>(),
+    skinCreamDates: skinCream.get(p.id) ?? new Set<string>(),
   }))
 }
 

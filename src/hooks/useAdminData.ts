@@ -37,32 +37,42 @@ export function useAdminData(
     setLoading(true)
     setError(null)
 
-    const [profilesRes, entriesRes, exerciseRes, ptRes] = await Promise.all([
-      supabase
-        .from('profiles')
-        .select(
-          'id, email, daily_goal, weekly_exercise_goal, weekly_pt_goal, is_admin',
-        ),
-      supabase
-        .from('entries')
-        .select('*')
-        .gte('entry_date', fromIso)
-        .lte('entry_date', toIso)
-        .order('created_at', { ascending: true }),
-      supabase
-        .from('exercise_days')
-        .select('user_id, entry_date')
-        .gte('entry_date', fromIso)
-        .lte('entry_date', toIso),
-      supabase
-        .from('pt_days')
-        .select('user_id, entry_date')
-        .gte('entry_date', fromIso)
-        .lte('entry_date', toIso),
-    ])
+    const [profilesRes, entriesRes, exerciseRes, ptRes, skinCreamRes] =
+      await Promise.all([
+        supabase
+          .from('profiles')
+          .select(
+            'id, email, daily_goal, weekly_exercise_goal, weekly_pt_goal, weekly_skin_cream_goal, is_admin',
+          ),
+        supabase
+          .from('entries')
+          .select('*')
+          .gte('entry_date', fromIso)
+          .lte('entry_date', toIso)
+          .order('created_at', { ascending: true }),
+        supabase
+          .from('exercise_days')
+          .select('user_id, entry_date')
+          .gte('entry_date', fromIso)
+          .lte('entry_date', toIso),
+        supabase
+          .from('pt_days')
+          .select('user_id, entry_date')
+          .gte('entry_date', fromIso)
+          .lte('entry_date', toIso),
+        supabase
+          .from('skin_cream_days')
+          .select('user_id, entry_date')
+          .gte('entry_date', fromIso)
+          .lte('entry_date', toIso),
+      ])
 
     const firstError =
-      profilesRes.error || entriesRes.error || exerciseRes.error || ptRes.error
+      profilesRes.error ||
+      entriesRes.error ||
+      exerciseRes.error ||
+      ptRes.error ||
+      skinCreamRes.error
     if (firstError) {
       setError(firstError.message)
       setLoading(false)
@@ -75,6 +85,7 @@ export function useAdminData(
         (entriesRes.data ?? []) as Entry[],
         (exerciseRes.data ?? []) as DayRow[],
         (ptRes.data ?? []) as DayRow[],
+        (skinCreamRes.data ?? []) as DayRow[],
       ),
     )
     setLoading(false)

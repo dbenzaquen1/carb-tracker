@@ -13,11 +13,13 @@ interface Props {
   goal: number
   weeklyExerciseGoal: number
   weeklyPtGoal: number
+  weeklySkinCreamGoal: number
   email: string
   entries: Entry[]
   onSaveGoal: (goal: number) => void | Promise<void>
   onSaveWeeklyExerciseGoal: (goal: number) => void | Promise<void>
   onSaveWeeklyPtGoal: (goal: number) => void | Promise<void>
+  onSaveWeeklySkinCreamGoal: (goal: number) => void | Promise<void>
   onSignOut: () => void | Promise<void>
 }
 
@@ -25,11 +27,13 @@ export function Settings({
   goal,
   weeklyExerciseGoal,
   weeklyPtGoal,
+  weeklySkinCreamGoal,
   email,
   entries,
   onSaveGoal,
   onSaveWeeklyExerciseGoal,
   onSaveWeeklyPtGoal,
+  onSaveWeeklySkinCreamGoal,
   onSignOut,
 }: Props) {
   const [value, setValue] = useState(String(goal))
@@ -39,6 +43,10 @@ export function Settings({
   const [exerciseSaved, setExerciseSaved] = useState(false)
   const [ptValue, setPtValue] = useState(String(weeklyPtGoal))
   const [ptSaved, setPtSaved] = useState(false)
+  const [skinCreamValue, setSkinCreamValue] = useState(
+    String(weeklySkinCreamGoal),
+  )
+  const [skinCreamSaved, setSkinCreamSaved] = useState(false)
 
   useEffect(() => {
     setValue(String(goal))
@@ -52,6 +60,10 @@ export function Settings({
     setPtValue(String(weeklyPtGoal))
   }, [weeklyPtGoal])
 
+  useEffect(() => {
+    setSkinCreamValue(String(weeklySkinCreamGoal))
+  }, [weeklySkinCreamGoal])
+
   const parsed = Number(value)
   const isValid = Number.isFinite(parsed) && parsed > 0
 
@@ -61,6 +73,12 @@ export function Settings({
 
   const ptParsed = Number(ptValue)
   const isPtValid = Number.isFinite(ptParsed) && ptParsed > 0 && ptParsed <= 7
+
+  const skinCreamParsed = Number(skinCreamValue)
+  const isSkinCreamValid =
+    Number.isFinite(skinCreamParsed) &&
+    skinCreamParsed > 0 &&
+    skinCreamParsed <= 7
 
   async function handleSave() {
     if (!isValid) return
@@ -81,6 +99,13 @@ export function Settings({
     await onSaveWeeklyPtGoal(Math.round(ptParsed))
     setPtSaved(true)
     setTimeout(() => setPtSaved(false), 1500)
+  }
+
+  async function handleSaveSkinCream() {
+    if (!isSkinCreamValid) return
+    await onSaveWeeklySkinCreamGoal(Math.round(skinCreamParsed))
+    setSkinCreamSaved(true)
+    setTimeout(() => setSkinCreamSaved(false), 1500)
   }
 
   function handleExport() {
@@ -182,6 +207,27 @@ export function Settings({
           disabled={!isPtValid}
         >
           {ptSaved ? 'Saved ✓' : 'Save PT goal'}
+        </button>
+      </section>
+
+      <section className="settings__section">
+        <label className="field">
+          <span>Weekly skin cream goal (days)</span>
+          <input
+            type="number"
+            inputMode="numeric"
+            min="1"
+            max="7"
+            value={skinCreamValue}
+            onChange={(e) => setSkinCreamValue(e.target.value)}
+          />
+        </label>
+        <button
+          className="btn btn--primary"
+          onClick={handleSaveSkinCream}
+          disabled={!isSkinCreamValid}
+        >
+          {skinCreamSaved ? 'Saved ✓' : 'Save skin cream goal'}
         </button>
       </section>
 

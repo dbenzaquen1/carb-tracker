@@ -54,6 +54,7 @@ function AdminUserDetail({ user, today }: { user: AdminUser; today: string }) {
 
   const exToday = user.exercisedDates.has(today)
   const ptToday = user.ptDates.has(today)
+  const skinCreamToday = user.skinCreamDates.has(today)
 
   const groups = groupByMeal(todays)
   const totals = mealTotals(todays)
@@ -73,6 +74,9 @@ function AdminUserDetail({ user, today }: { user: AdminUser; today: string }) {
         </span>
         <span className={`admin__flag ${ptToday ? 'is-done' : ''}`}>
           {ptToday ? '✓' : '—'} PT today
+        </span>
+        <span className={`admin__flag ${skinCreamToday ? 'is-done' : ''}`}>
+          {skinCreamToday ? '✓' : '—'} Cream today
         </span>
       </div>
 
@@ -106,6 +110,12 @@ function AdminUserDetail({ user, today }: { user: AdminUser; today: string }) {
         title="PT exercises"
         doneDates={user.ptDates}
         weeklyGoal={user.weeklyPtGoal}
+        today={today}
+      />
+      <WeeklyCheckCard
+        title="Skin cream"
+        doneDates={user.skinCreamDates}
+        weeklyGoal={user.weeklySkinCreamGoal}
         today={today}
       />
 
@@ -175,6 +185,7 @@ export function AdminView({ users, today, loading, error }: Props) {
             )
             const ex = countExercised(week, user.exercisedDates)
             const pt = countExercised(week, user.ptDates)
+            const cream = countExercised(week, user.skinCreamDates)
             const open = selectedId === user.id
             return (
               <div className="admin__row" key={user.id}>
@@ -191,7 +202,8 @@ export function AdminView({ users, today, loading, error }: Props) {
                   </span>
                   <span className="admin__summary">
                     {consumed}/{user.dailyGoal} g · 🏃 {ex}/
-                    {user.weeklyExerciseGoal} · 🩹 {pt}/{user.weeklyPtGoal}
+                    {user.weeklyExerciseGoal} · 🩹 {pt}/{user.weeklyPtGoal} · 🧴{' '}
+                    {cream}/{user.weeklySkinCreamGoal}
                   </span>
                 </button>
                 {open && <AdminUserDetail user={user} today={today} />}

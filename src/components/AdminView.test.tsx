@@ -15,10 +15,12 @@ function user(
     dailyGoal: 150,
     weeklyExerciseGoal: 5,
     weeklyPtGoal: 7,
+    weeklySkinCreamGoal: 7,
     isAdmin: false,
     entries: [],
     exercisedDates: new Set(),
     ptDates: new Set(),
+    skinCreamDates: new Set(),
     ...over,
   }
 }

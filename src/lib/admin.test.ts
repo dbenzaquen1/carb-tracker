@@ -9,6 +9,7 @@ const profiles: AdminProfileRow[] = [
     daily_goal: 150,
     weekly_exercise_goal: 5,
     weekly_pt_goal: 7,
+    weekly_skin_cream_goal: 7,
     is_admin: false,
   },
   {
@@ -17,6 +18,7 @@ const profiles: AdminProfileRow[] = [
     daily_goal: 120,
     weekly_exercise_goal: 3,
     weekly_pt_goal: 7,
+    weekly_skin_cream_goal: 7,
     is_admin: true,
   },
 ]
@@ -40,6 +42,7 @@ describe('buildAdminUsers', () => {
       entries,
       [{ user_id: 'u1', entry_date: '2026-06-18' }],
       [{ user_id: 'u2', entry_date: '2026-06-17' }],
+      [{ user_id: 'u1', entry_date: '2026-06-18' }],
     )
 
     const ann = users.find((u) => u.id === 'u1')!
@@ -49,15 +52,17 @@ describe('buildAdminUsers', () => {
     expect(ann.entries).toHaveLength(1)
     expect(ann.exercisedDates.has('2026-06-18')).toBe(true)
     expect(ann.ptDates.size).toBe(0)
+    expect(ann.skinCreamDates.has('2026-06-18')).toBe(true)
 
     expect(bob.isAdmin).toBe(true)
     expect(bob.entries).toHaveLength(0)
     expect(bob.ptDates.has('2026-06-17')).toBe(true)
+    expect(bob.skinCreamDates.size).toBe(0)
   })
 })
 
 describe('filterUsers', () => {
-  const users = buildAdminUsers(profiles, [], [], [])
+  const users = buildAdminUsers(profiles, [], [], [], [])
 
   it('returns all users for an empty query', () => {
     expect(filterUsers(users, '  ')).toHaveLength(2)
