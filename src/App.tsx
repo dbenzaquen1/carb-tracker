@@ -59,10 +59,12 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
     goal,
     weeklyExerciseGoal,
     weeklyPtGoal,
+    weeklySkinCreamGoal,
     isAdmin,
     updateGoal,
     updateWeeklyExerciseGoal,
     updateWeeklyPtGoal,
+    updateWeeklySkinCreamGoal,
   } = useProfile(userId)
   const { entries, loading, error, addEntry, updateEntry, deleteEntry } =
     useEntries(userId, fromDate, today)
@@ -80,6 +82,12 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
   const { doneDates: ptDates, toggle: togglePt } = useDailyCheck(
     userId,
     'pt_days',
+    fromDate,
+    today,
+  )
+  const { doneDates: skinCreamDates, toggle: toggleSkinCream } = useDailyCheck(
+    userId,
+    'skin_cream_days',
     fromDate,
     today,
   )
@@ -102,6 +110,13 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
       idleLabel: 'Mark PT exercises done',
       doneLabel: 'PT exercises done',
     },
+    {
+      key: 'skin-cream',
+      done: skinCreamDates.has(selectedDate),
+      onToggle: () => toggleSkinCream(selectedDate),
+      idleLabel: 'Mark skin cream done',
+      doneLabel: 'Skin cream done',
+    },
   ]
 
   const weeklyChecks = [
@@ -116,6 +131,12 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
       title: 'PT exercises',
       doneDates: ptDates,
       goal: weeklyPtGoal,
+    },
+    {
+      key: 'skin-cream',
+      title: 'Skin cream',
+      doneDates: skinCreamDates,
+      goal: weeklySkinCreamGoal,
     },
   ]
 
@@ -195,11 +216,13 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
             goal={goal}
             weeklyExerciseGoal={weeklyExerciseGoal}
             weeklyPtGoal={weeklyPtGoal}
+            weeklySkinCreamGoal={weeklySkinCreamGoal}
             email={email}
             entries={entries}
             onSaveGoal={updateGoal}
             onSaveWeeklyExerciseGoal={updateWeeklyExerciseGoal}
             onSaveWeeklyPtGoal={updateWeeklyPtGoal}
+            onSaveWeeklySkinCreamGoal={updateWeeklySkinCreamGoal}
             onSignOut={handleSignOut}
           />
         )}

@@ -38,3 +38,6 @@ export const DEFAULT_WEEKLY_EXERCISE_GOAL = 5
 
 /** Default number of days per week the user aims to do PT exercises. */
 export const DEFAULT_WEEKLY_PT_GOAL = 7
+
+/** Default number of days per week the user aims to apply skin cream. */
+export const DEFAULT_WEEKLY_SKIN_CREAM_GOAL = 7

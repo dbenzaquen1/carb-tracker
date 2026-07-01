@@ -15,6 +15,8 @@ create table if not exists public.profiles (
   weekly_exercise_goal integer not null default 5
     check (weekly_exercise_goal > 0),
   weekly_pt_goal integer not null default 7 check (weekly_pt_goal > 0),
+  weekly_skin_cream_goal integer not null default 7
+    check (weekly_skin_cream_goal > 0),
   is_admin boolean not null default false,
   updated_at timestamptz not null default now()
 );
@@ -26,6 +28,9 @@ alter table public.profiles
 alter table public.profiles
   add column if not exists weekly_pt_goal integer not null default 7
     check (weekly_pt_goal > 0);
+alter table public.profiles
+  add column if not exists weekly_skin_cream_goal integer not null default 7
+    check (weekly_skin_cream_goal > 0);
 alter table public.profiles add column if not exists email text;
 alter table public.profiles
   add column if not exists is_admin boolean not null default false;
@@ -60,6 +65,14 @@ create table if not exists public.pt_days (
   primary key (user_id, entry_date)
 );
 
+-- ...and for applying skin cream.
+create table if not exists public.skin_cream_days (
+  user_id uuid not null references auth.users (id) on delete cascade,
+  entry_date date not null,
+  created_at timestamptz not null default now(),
+  primary key (user_id, entry_date)
+);
+
 -- ---------------------------------------------------------------------------
 -- Admin helper: SECURITY DEFINER so policies can check admin status without
 -- recursing through profiles' own RLS.
@@ -84,6 +97,7 @@ alter table public.profiles enable row level security;
 alter table public.entries enable row level security;
 alter table public.exercise_days enable row level security;
 alter table public.pt_days enable row level security;
+alter table public.skin_cream_days enable row level security;
 
 -- profiles
 drop policy if exists "Users manage own profile" on public.profiles;
@@ -134,6 +148,17 @@ create policy "Read own or admin pt days" on public.pt_days
 create policy "Insert own pt days" on public.pt_days
   for insert with check (auth.uid() = user_id);
 create policy "Delete own pt days" on public.pt_days
+  for delete using (auth.uid() = user_id);
+
+-- skin_cream_days
+drop policy if exists "Read own or admin skin cream days" on public.skin_cream_days;
+drop policy if exists "Insert own skin cream days" on public.skin_cream_days;
+drop policy if exists "Delete own skin cream days" on public.skin_cream_days;
+create policy "Read own or admin skin cream days" on public.skin_cream_days
+  for select using (auth.uid() = user_id or public.is_admin(auth.uid()));
+create policy "Insert own skin cream days" on public.skin_cream_days
+  for insert with check (auth.uid() = user_id);
+create policy "Delete own skin cream days" on public.skin_cream_days
   for delete using (auth.uid() = user_id);
 
 -- ---------------------------------------------------------------------------
