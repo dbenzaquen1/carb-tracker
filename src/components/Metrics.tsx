@@ -6,8 +6,9 @@ import {
   highestDay,
   loggedDayCount,
 } from '../lib/metrics'
+import { bucketModeFor, chartBars } from '../lib/chart'
 import type { Entry } from '../types'
-import { BarChart } from './BarChart'
+import { TrendChart } from './TrendChart'
 import { WeeklyCheckCard } from './WeeklyCheckCard'
 
 export interface WeeklyCheck {
@@ -66,7 +67,14 @@ export function Metrics({
     `${periodDays} days`
 
   const period = dailyTotals(entries, lastNDays(periodDays, today))
-  const daily14 = dailyTotals(entries, lastNDays(14, today))
+  const bars = chartBars(entries, periodDays, today)
+  const mode = bucketModeFor(periodDays)
+  const chartHeading =
+    mode === 'day'
+      ? `Daily (${periodLabel})`
+      : mode === 'week'
+        ? `Weekly avg/day (${periodLabel})`
+        : `Monthly avg/day (${periodLabel})`
 
   const avg = averagePerLoggedDay(period)
   const within = daysWithinGoal(period, goal)
@@ -109,8 +117,8 @@ export function Metrics({
       </div>
 
       <section className="chart-card">
-        <h3>Last 14 days</h3>
-        <BarChart data={daily14} goal={goal} />
+        <h3>{chartHeading}</h3>
+        <TrendChart bars={bars} goal={goal} />
         <p className="chart-legend">
           <span className="dot dot--ok" /> within goal
           <span className="dot dot--over" /> over goal
