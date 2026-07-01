@@ -32,6 +32,8 @@ interface Props {
   onPrevDay: () => void
   onNextDay: () => void
   onToday: () => void
+  /** Jump straight to any date (YYYY-MM-DD). */
+  onPickDate: (date: string) => void
   /** Daily check-offs (exercise, PT, …) for the selected day. */
   checks: DayCheck[]
 }
@@ -52,6 +54,7 @@ export function Today({
   onPrevDay,
   onNextDay,
   onToday,
+  onPickDate,
   checks,
 }: Props) {
   const consumed = sumCarbs(entries)
@@ -71,6 +74,16 @@ export function Today({
           <span className="day-nav__label">
             {relativeDayLabel(date, today)}
           </span>
+          <input
+            type="date"
+            className="day-nav__date"
+            aria-label="Jump to date"
+            value={date}
+            max={today}
+            onChange={(e) => {
+              if (e.target.value) onPickDate(e.target.value)
+            }}
+          />
           {!isToday && (
             <button className="day-nav__today" onClick={onToday}>
               Jump to today

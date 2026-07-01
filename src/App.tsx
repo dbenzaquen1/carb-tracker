@@ -48,10 +48,11 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
   const today = todayISO()
   const [tab, setTab] = useState<Tab>('today')
   const [selectedDate, setSelectedDate] = useState(today)
+  const [trendsDays, setTrendsDays] = useState(30)
 
-  // Load at least the last 30 days (for metrics), and widen the window back to
-  // the selected day if the user browses further into the past.
-  const earliest = lastNDays(30, today)[0]
+  // Load enough history for the chosen trends period, and widen the window
+  // further back if the user browses (or jumps) to an earlier day.
+  const earliest = lastNDays(trendsDays, today)[0]
   const fromDate = selectedDate < earliest ? selectedDate : earliest
 
   const {
@@ -161,6 +162,7 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
               onPrevDay={goPrevDay}
               onNextDay={goNextDay}
               onToday={() => setSelectedDate(today)}
+              onPickDate={(d) => setSelectedDate(d > today ? today : d)}
               checks={dayChecks}
             />
           ))}
@@ -174,6 +176,8 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
               goal={goal}
               today={today}
               weeklyChecks={weeklyChecks}
+              periodDays={trendsDays}
+              onChangePeriod={setTrendsDays}
             />
           ))}
 
