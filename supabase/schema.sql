@@ -73,6 +73,20 @@ create table if not exists public.skin_cream_days (
   primary key (user_id, entry_date)
 );
 
+-- One row per logged strength-training set (weight × reps of an exercise).
+create table if not exists public.workout_sets (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  entry_date date not null,
+  exercise text not null check (char_length(exercise) between 1 and 100),
+  weight numeric(6, 1) not null check (weight >= 0),
+  reps integer not null check (reps between 1 and 999),
+  created_at timestamptz not null default now()
+);
+
+create index if not exists workout_sets_user_date_idx
+  on public.workout_sets (user_id, entry_date);
+
 -- ---------------------------------------------------------------------------
 -- Admin helper: SECURITY DEFINER so policies can check admin status without
 -- recursing through profiles' own RLS.
@@ -98,6 +112,7 @@ alter table public.entries enable row level security;
 alter table public.exercise_days enable row level security;
 alter table public.pt_days enable row level security;
 alter table public.skin_cream_days enable row level security;
+alter table public.workout_sets enable row level security;
 
 -- profiles
 drop policy if exists "Users manage own profile" on public.profiles;
@@ -159,6 +174,17 @@ create policy "Read own or admin skin cream days" on public.skin_cream_days
 create policy "Insert own skin cream days" on public.skin_cream_days
   for insert with check (auth.uid() = user_id);
 create policy "Delete own skin cream days" on public.skin_cream_days
+  for delete using (auth.uid() = user_id);
+
+-- workout_sets
+drop policy if exists "Read own or admin workout sets" on public.workout_sets;
+drop policy if exists "Insert own workout sets" on public.workout_sets;
+drop policy if exists "Delete own workout sets" on public.workout_sets;
+create policy "Read own or admin workout sets" on public.workout_sets
+  for select using (auth.uid() = user_id or public.is_admin(auth.uid()));
+create policy "Insert own workout sets" on public.workout_sets
+  for insert with check (auth.uid() = user_id);
+create policy "Delete own workout sets" on public.workout_sets
   for delete using (auth.uid() = user_id);
 
 -- ---------------------------------------------------------------------------

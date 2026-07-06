@@ -1,4 +1,4 @@
-export type Tab = 'today' | 'metrics' | 'admin' | 'settings'
+export type Tab = 'today' | 'workouts' | 'metrics' | 'admin' | 'settings'
 
 interface TabDef {
   id: Tab
@@ -9,6 +9,7 @@ interface TabDef {
 
 const TABS: TabDef[] = [
   { id: 'today', label: 'Today', icon: '🍽️' },
+  { id: 'workouts', label: 'Gym', icon: '🏋️' },
   { id: 'metrics', label: 'Trends', icon: '📈' },
   { id: 'admin', label: 'Admin', icon: '🛡️', adminOnly: true },
   { id: 'settings', label: 'Settings', icon: '⚙️' },

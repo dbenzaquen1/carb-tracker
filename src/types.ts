@@ -31,6 +31,25 @@ export interface Profile {
   updated_at: string
 }
 
+/** A single logged strength-training set: an exercise done for weight × reps. */
+export interface WorkoutSet {
+  id: string
+  user_id: string
+  /** Local calendar date in YYYY-MM-DD form. */
+  entry_date: string
+  exercise: string
+  /** Load used; 0 means a bodyweight movement (dips, plank…). */
+  weight: number
+  reps: number
+  created_at: string
+}
+
+/** Fields supplied by the user when logging a set. */
+export type NewWorkoutSet = Pick<
+  WorkoutSet,
+  'entry_date' | 'exercise' | 'weight' | 'reps'
+>
+
 export const DEFAULT_DAILY_GOAL = 150
 
 /** Default number of days per week the user aims to exercise. */

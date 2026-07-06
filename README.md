@@ -13,6 +13,8 @@ the same data shows up on every device.
 - **Add / edit / delete** entries in a tap or two.
 - **Trends** — 7- and 30-day averages (per logged day), on-target day counts,
   a 14-day bar chart, and your highest day.
+- **Gym log** — a Workouts tab preloaded with a 4-day upper/lower split; log
+  weight × reps per set and see what you lifted last time for each exercise.
 - **Cloud sync** — data is stored in Supabase and synced across devices, behind
   a private login.
 - **Installable** — "Add to Home Screen" on a phone for an app-like, offline-

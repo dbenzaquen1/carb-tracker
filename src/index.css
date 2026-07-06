@@ -1016,3 +1016,135 @@ h3 {
     transform: rotate(360deg);
   }
 }
+
+/* ---------- Workouts (gym log) ---------- */
+.template-picker {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+.template-picker__btn {
+  border: 1px solid var(--border);
+  background: var(--input-bg);
+  border-radius: 10px;
+  padding: 0.55rem 0.25rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.template-picker__btn.is-active {
+  background: var(--green-soft);
+  border-color: var(--green);
+  color: var(--green-dark);
+}
+
+.exercise {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 0.85rem;
+  margin-bottom: 0.9rem;
+}
+.exercise.is-done {
+  border: 1px solid var(--green);
+}
+.exercise__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.exercise__head h3 {
+  font-size: 1rem;
+}
+.exercise__target {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.exercise.is-done .exercise__target {
+  color: var(--green-dark);
+}
+.exercise__last {
+  margin: 0.25rem 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+.exercise__sets {
+  list-style: decimal inside;
+  margin: 0.6rem 0 0;
+  padding: 0;
+}
+.exercise__set {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0;
+  border-top: 1px solid var(--border);
+  font-weight: 600;
+}
+.exercise__set:first-child {
+  border-top: none;
+}
+.exercise__set::marker {
+  color: var(--muted);
+}
+.exercise__set-delete {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.95rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 8px;
+}
+.exercise__set-delete:active {
+  background: var(--danger-soft);
+  color: var(--red);
+}
+.exercise__form {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+}
+.exercise__form input {
+  font-size: 1rem;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--input-bg);
+  color: var(--text);
+  min-width: 0;
+}
+.exercise__form input:focus {
+  outline: 2px solid var(--green);
+  outline-offset: 1px;
+}
+.exercise__form .btn {
+  white-space: nowrap;
+  padding-inline: 0.8rem;
+}
+
+.add-exercise {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.4rem;
+  margin-top: 1rem;
+}
+.add-exercise input {
+  font-size: 1rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--input-bg);
+  color: var(--text);
+  min-width: 0;
+}
+.add-exercise input:focus {
+  outline: 2px solid var(--green);
+  outline-offset: 1px;
+}
