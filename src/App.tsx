@@ -8,6 +8,7 @@ import { useEntries } from './hooks/useEntries'
 import { useDailyCheck } from './hooks/useDailyCheck'
 import { useAdminData } from './hooks/useAdminData'
 import { useProfile } from './hooks/useProfile'
+import { useWorkoutSets } from './hooks/useWorkoutSets'
 import { AdminView } from './components/AdminView'
 import { BottomNav, type Tab } from './components/BottomNav'
 import { ConfigNeeded } from './components/ConfigNeeded'
@@ -16,6 +17,7 @@ import { Metrics } from './components/Metrics'
 import { Settings } from './components/Settings'
 import { Spinner } from './components/Spinner'
 import { Today } from './components/Today'
+import { Workouts } from './components/Workouts'
 
 export default function App() {
   const { user, loading } = useAuth()
@@ -91,6 +93,13 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
     fromDate,
     today,
   )
+  const {
+    sets: workoutSets,
+    loading: workoutsLoading,
+    error: workoutsError,
+    addSet: addWorkoutSet,
+    deleteSet: deleteWorkoutSet,
+  } = useWorkoutSets(userId)
 
   const dayEntries = entries.filter((e) => e.entry_date === selectedDate)
   const pastFoods = dedupePastFoods(entries)
@@ -187,6 +196,29 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
               checks={dayChecks}
             />
           ))}
+
+        {tab === 'workouts' && (
+          <>
+            {workoutsError && (
+              <p className="banner banner--error">{workoutsError}</p>
+            )}
+            {workoutsLoading ? (
+              <Spinner />
+            ) : (
+              <Workouts
+                date={selectedDate}
+                today={today}
+                sets={workoutSets}
+                onAdd={addWorkoutSet}
+                onDelete={deleteWorkoutSet}
+                onPrevDay={goPrevDay}
+                onNextDay={goNextDay}
+                onToday={() => setSelectedDate(today)}
+                onPickDate={(d) => setSelectedDate(d > today ? today : d)}
+              />
+            )}
+          </>
+        )}
 
         {tab === 'metrics' &&
           (loading ? (
