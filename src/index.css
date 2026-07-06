@@ -1148,3 +1148,70 @@ h3 {
   outline: 2px solid var(--green);
   outline-offset: 1px;
 }
+
+/* ---------- Easter eggs ---------- */
+.app__title {
+  cursor: pointer;
+  user-select: none;
+}
+.confetti {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  pointer-events: none;
+  overflow: hidden;
+}
+.confetti__piece {
+  position: absolute;
+  top: -2rem;
+  font-size: 1.5rem;
+  will-change: transform;
+  animation-name: confetti-fall;
+  animation-timing-function: ease-in;
+  animation-fill-mode: forwards;
+}
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-2rem) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(105vh) rotate(var(--rot, 360deg));
+    opacity: 0.9;
+  }
+}
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + 1.1rem);
+  transform: translateX(-50%);
+  z-index: 201;
+  max-width: 90%;
+  text-align: center;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  border-radius: 999px;
+  padding: 0.6rem 1.1rem;
+  font-weight: 600;
+  animation: toast-in 0.2s ease;
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .confetti {
+    display: none;
+  }
+  .toast {
+    animation: none;
+  }
+}

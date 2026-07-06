@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { isSupabaseConfigured, supabase } from './lib/supabase'
 import { addDays, lastNDays, todayISO } from './lib/dates'
 import { dedupePastFoods } from './lib/suggestions'
 import { applyTheme, getStoredTheme } from './lib/theme'
+import { foodReaction, TITLE_TAP_SECRET } from './lib/eastereggs'
+import type { NewEntry } from './types'
 import { useAuth } from './hooks/useAuth'
 import { useEntries } from './hooks/useEntries'
 import { useDailyCheck } from './hooks/useDailyCheck'
@@ -11,11 +13,13 @@ import { useProfile } from './hooks/useProfile'
 import { useWorkoutSets } from './hooks/useWorkoutSets'
 import { AdminView } from './components/AdminView'
 import { BottomNav, type Tab } from './components/BottomNav'
+import { Confetti } from './components/Confetti'
 import { ConfigNeeded } from './components/ConfigNeeded'
 import { Login } from './components/Login'
 import { Metrics } from './components/Metrics'
 import { Settings } from './components/Settings'
 import { Spinner } from './components/Spinner'
+import { Toast } from './components/Toast'
 import { Today } from './components/Today'
 import { Workouts } from './components/Workouts'
 
@@ -104,25 +108,76 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
   const dayEntries = entries.filter((e) => e.entry_date === selectedDate)
   const pastFoods = dedupePastFoods(entries)
 
+  // ---- Easter eggs 🎉 ----
+  const [celebration, setCelebration] = useState<{
+    id: number
+    emojis: string[]
+    message?: string
+  } | null>(null)
+  const celebrateTimer = useRef<number | undefined>(undefined)
+  const titleTaps = useRef(0)
+
+  const celebrate = useCallback((emojis: string[], message?: string) => {
+    setCelebration({ id: Date.now(), emojis, message })
+    if (celebrateTimer.current) window.clearTimeout(celebrateTimer.current)
+    celebrateTimer.current = window.setTimeout(() => setCelebration(null), 2600)
+  }, [])
+
+  function handleTitleTap() {
+    titleTaps.current += 1
+    if (titleTaps.current >= TITLE_TAP_SECRET) {
+      titleTaps.current = 0
+      celebrate(['❤️', '💕', '💖', '💛', '💚'], 'Made with ❤️ just for you')
+    }
+  }
+
+  async function handleAdd(entry: NewEntry) {
+    await addEntry(entry)
+    const emoji = foodReaction(entry.name)
+    if (emoji) celebrate([emoji])
+  }
+
+  // Toggle a daily check, and celebrate when it completes all three for today.
+  function toggleCheck(
+    key: string,
+    dates: Set<string>,
+    toggleFn: (d: string) => void,
+  ) {
+    const turningOn = !dates.has(selectedDate)
+    toggleFn(selectedDate)
+    if (turningOn && selectedDate === today) {
+      const others: [string, Set<string>][] = [
+        ['exercise', exercisedDates],
+        ['pt', ptDates],
+        ['skin-cream', skinCreamDates],
+      ]
+      const rest = others.filter(([k]) => k !== key)
+      if (rest.every(([, s]) => s.has(today))) {
+        celebrate(['🎉', '⭐', '💪', '🎊', '✅'], 'All done today! 🎉')
+      }
+    }
+  }
+
   const dayChecks = [
     {
       key: 'exercise',
       done: exercisedDates.has(selectedDate),
-      onToggle: () => toggleExercise(selectedDate),
+      onToggle: () => toggleCheck('exercise', exercisedDates, toggleExercise),
       idleLabel: 'Mark exercise done',
       doneLabel: 'Exercise done',
     },
     {
       key: 'pt',
       done: ptDates.has(selectedDate),
-      onToggle: () => togglePt(selectedDate),
+      onToggle: () => toggleCheck('pt', ptDates, togglePt),
       idleLabel: 'Mark PT exercises done',
       doneLabel: 'PT exercises done',
     },
     {
       key: 'skin-cream',
       done: skinCreamDates.has(selectedDate),
-      onToggle: () => toggleSkinCream(selectedDate),
+      onToggle: () =>
+        toggleCheck('skin-cream', skinCreamDates, toggleSkinCream),
       idleLabel: 'Mark skin cream done',
       doneLabel: 'Skin cream done',
     },
@@ -170,7 +225,9 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
   return (
     <div className="app">
       <header className="app__bar">
-        <h1 className="app__title">Carb Tracker</h1>
+        <h1 className="app__title" onClick={handleTitleTap}>
+          Carb Tracker
+        </h1>
       </header>
 
       <main className="app__main">
@@ -186,7 +243,7 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
               goal={goal}
               entries={dayEntries}
               pastFoods={pastFoods}
-              onAdd={addEntry}
+              onAdd={handleAdd}
               onUpdate={updateEntry}
               onDelete={deleteEntry}
               onPrevDay={goPrevDay}
@@ -261,6 +318,11 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
       </main>
 
       <BottomNav active={tab} onChange={goToTab} isAdmin={isAdmin} />
+
+      {celebration && (
+        <Confetti key={celebration.id} emojis={celebration.emojis} />
+      )}
+      {celebration?.message && <Toast>{celebration.message}</Toast>}
     </div>
   )
 }
