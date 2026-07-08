@@ -3,8 +3,16 @@ import { isSupabaseConfigured, supabase } from './lib/supabase'
 import { addDays, lastNDays, todayISO } from './lib/dates'
 import { dedupePastFoods } from './lib/suggestions'
 import { applyTheme, getStoredTheme } from './lib/theme'
-import { foodReaction, TITLE_TAP_SECRET } from './lib/eastereggs'
-import type { NewEntry } from './types'
+import {
+  foodReaction,
+  holidayReaction,
+  isLateNight,
+  isNewRecord,
+  streakCheer,
+  TITLE_TAP_SECRET,
+} from './lib/eastereggs'
+import { currentStreak } from './lib/exercise'
+import type { NewEntry, NewWorkoutSet } from './types'
 import { useAuth } from './hooks/useAuth'
 import { useEntries } from './hooks/useEntries'
 import { useDailyCheck } from './hooks/useDailyCheck'
@@ -132,12 +140,35 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
   }
 
   async function handleAdd(entry: NewEntry) {
+    const firstOfDay = !entries.some((e) => e.entry_date === entry.entry_date)
     await addEntry(entry)
+
+    // The first food logged on a holiday gets festive confetti.
+    const holiday = firstOfDay ? holidayReaction(entry.entry_date) : null
+    if (holiday) {
+      celebrate(holiday.emojis, holiday.message)
+      return
+    }
+
     const emoji = foodReaction(entry.name)
-    if (emoji) celebrate([emoji])
+    if (entry.meal === 'snack' && isLateNight(new Date().getHours())) {
+      celebrate(
+        emoji ? [emoji, '🌙', '✨'] : ['🌙', '⭐', '✨'],
+        'Midnight snack! 🌙',
+      )
+    } else if (emoji) {
+      celebrate([emoji])
+    }
   }
 
-  // Toggle a daily check, and celebrate when it completes all three for today.
+  async function handleAddSet(set: NewWorkoutSet) {
+    const isPr = isNewRecord(workoutSets, set)
+    await addWorkoutSet(set)
+    if (isPr) celebrate(['🏋️', '💪', '🔥'], `New ${set.exercise} PR! 🏋️`)
+  }
+
+  // Toggle a daily check, and celebrate streak milestones or completing all
+  // three checks for today. A rarer streak milestone wins over "all done".
   function toggleCheck(
     key: string,
     dates: Set<string>,
@@ -145,16 +176,25 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
   ) {
     const turningOn = !dates.has(selectedDate)
     toggleFn(selectedDate)
-    if (turningOn && selectedDate === today) {
-      const others: [string, Set<string>][] = [
-        ['exercise', exercisedDates],
-        ['pt', ptDates],
-        ['skin-cream', skinCreamDates],
-      ]
-      const rest = others.filter(([k]) => k !== key)
-      if (rest.every(([, s]) => s.has(today))) {
-        celebrate(['🎉', '⭐', '💪', '🎊', '✅'], 'All done today! 🎉')
+    if (!turningOn || selectedDate !== today) return
+
+    if (key === 'exercise') {
+      const withToday = new Set(exercisedDates).add(today)
+      const cheer = streakCheer(currentStreak(today, withToday, addDays))
+      if (cheer) {
+        celebrate(['🔥', '💪', '⚡', '🏃'], cheer)
+        return
       }
+    }
+
+    const others: [string, Set<string>][] = [
+      ['exercise', exercisedDates],
+      ['pt', ptDates],
+      ['skin-cream', skinCreamDates],
+    ]
+    const rest = others.filter(([k]) => k !== key)
+    if (rest.every(([, s]) => s.has(today))) {
+      celebrate(['🎉', '⭐', '💪', '🎊', '✅'], 'All done today! 🎉')
     }
   }
 
@@ -266,7 +306,7 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
                 date={selectedDate}
                 today={today}
                 sets={workoutSets}
-                onAdd={addWorkoutSet}
+                onAdd={handleAddSet}
                 onDelete={deleteWorkoutSet}
                 onPrevDay={goPrevDay}
                 onNextDay={goNextDay}
