@@ -7,3 +7,4 @@ public/pwa-*.png
 public/apple-touch-icon.png
 pnpm-lock.yaml
 package-lock.json
+.superpowers

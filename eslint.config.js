@@ -33,6 +33,22 @@ export default tseslint.config(
       globals: globals.node,
     },
   },
+  // The push handler is a plain service-worker script served from public/.
+  {
+    files: ['public/push-sw.js'],
+    extends: [js.configs.recommended],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.serviceworker,
+    },
+  },
+  // Supabase Edge Functions run on Deno.
+  {
+    files: ['supabase/functions/**/*.ts'],
+    languageOptions: {
+      globals: { Deno: 'readonly' },
+    },
+  },
   // Turn off stylistic rules that conflict with Prettier.
   prettier,
 )
