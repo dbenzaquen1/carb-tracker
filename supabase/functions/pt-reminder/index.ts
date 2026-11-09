@@ -13,7 +13,8 @@ type Subscription = {
 
 type UserResult = {
   userId: string
-  decision: ReminderDecision
+  decision?: ReminderDecision
+  error?: string
   delivered?: number
   removed?: number
 }
@@ -69,13 +70,21 @@ Deno.serve(async (req) => {
   let sent = 0
 
   for (const profile of profiles ?? []) {
-    const { data: latest } = await supabase
+    const { data: latest, error: latestError } = await supabase
       .from('pt_days')
       .select('entry_date')
       .eq('user_id', profile.id)
       .order('entry_date', { ascending: false })
       .limit(1)
       .maybeSingle()
+
+    if (latestError) {
+      console.error(
+        `pt-reminder user=${profile.id} pt_days query failed: ${latestError.message}`,
+      )
+      results.push({ userId: profile.id, error: latestError.message })
+      continue
+    }
 
     const decision = decideForUser({
       latestPtDate: latest?.entry_date ?? null,
