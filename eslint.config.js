@@ -42,6 +42,13 @@ export default tseslint.config(
       globals: globals.serviceworker,
     },
   },
+  // Supabase Edge Functions run on Deno.
+  {
+    files: ['supabase/functions/**/*.ts'],
+    languageOptions: {
+      globals: { Deno: 'readonly' },
+    },
+  },
   // Turn off stylistic rules that conflict with Prettier.
   prettier,
 )
