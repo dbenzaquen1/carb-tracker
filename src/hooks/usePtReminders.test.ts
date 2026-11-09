@@ -198,4 +198,69 @@ describe('usePtReminders', () => {
     expect(addPushSubscription).toHaveBeenCalled()
     expect(result.current.enabled).toBe(true)
   })
+
+  it('starts loading and surfaces a load failure', async () => {
+    vi.mocked(loadPtReminderState).mockRejectedValue(new Error('load failed'))
+    const { result } = renderHook(() => usePtReminders('u1'))
+    expect(result.current.loading).toBe(true)
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(result.current.error).toBe('load failed')
+  })
+
+  it('ignores the late load result after the user changes', async () => {
+    let resolveFirst!: (v: { time: string; thisDeviceEnabled: boolean }) => void
+    vi.mocked(loadPtReminderState)
+      .mockReturnValueOnce(new Promise((r) => (resolveFirst = r)))
+      .mockResolvedValueOnce({ time: '07:00', thisDeviceEnabled: false })
+    const { result, rerender } = renderHook(({ id }) => usePtReminders(id), {
+      initialProps: { id: 'u1' },
+    })
+    rerender({ id: 'u2' })
+    await waitFor(() => expect(result.current.time).toBe('07:00'))
+    await act(async () => {
+      resolveFirst({ time: '10:00', thisDeviceEnabled: true })
+    })
+    expect(result.current.time).toBe('07:00')
+    expect(result.current.enabled).toBe(false)
+  })
+
+  it('does not apply an enable that resolves after the user changed', async () => {
+    let resolveAdd!: () => void
+    vi.mocked(subscribeToPush).mockResolvedValue(sub('e1'))
+    vi.mocked(addPushSubscription).mockReturnValue(
+      new Promise<void>((r) => (resolveAdd = r)),
+    )
+    const { result, rerender } = renderHook(({ id }) => usePtReminders(id), {
+      initialProps: { id: 'u1' },
+    })
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    let pending!: Promise<void>
+    act(() => {
+      pending = result.current.enable()
+    })
+    rerender({ id: 'u2' })
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    await act(async () => {
+      resolveAdd()
+      await pending
+    })
+    expect(result.current.enabled).toBe(false)
+  })
+
+  it('reverts the time and shows the error when saving fails, then clears it on success', async () => {
+    vi.mocked(savePtReminderTime).mockRejectedValueOnce(
+      new Error('save failed'),
+    )
+    const { result } = await setup()
+    await act(async () => {
+      await result.current.saveTime('08:15')
+    })
+    expect(result.current.time).toBe('09:00')
+    expect(result.current.error).toBe('save failed')
+    await act(async () => {
+      await result.current.saveTime('08:30')
+    })
+    expect(result.current.time).toBe('08:30')
+    expect(result.current.error).toBeNull()
+  })
 })
