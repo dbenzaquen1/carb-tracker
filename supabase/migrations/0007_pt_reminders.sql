@@ -26,14 +26,17 @@ create index if not exists push_subscriptions_user_idx
 
 alter table public.push_subscriptions enable row level security;
 
--- Owners manage their own rows; no update and no admin read.
+-- Owners manage their own rows; no admin read.
 drop policy if exists "Read own push subscriptions" on public.push_subscriptions;
 drop policy if exists "Insert own push subscriptions" on public.push_subscriptions;
+drop policy if exists "Update own push subscriptions" on public.push_subscriptions;
 drop policy if exists "Delete own push subscriptions" on public.push_subscriptions;
 create policy "Read own push subscriptions" on public.push_subscriptions
   for select using (auth.uid() = user_id);
 create policy "Insert own push subscriptions" on public.push_subscriptions
   for insert with check (auth.uid() = user_id);
+create policy "Update own push subscriptions" on public.push_subscriptions
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
 create policy "Delete own push subscriptions" on public.push_subscriptions
   for delete using (auth.uid() = user_id);
 

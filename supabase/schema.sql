@@ -213,14 +213,17 @@ create policy "Insert own workout sets" on public.workout_sets
 create policy "Delete own workout sets" on public.workout_sets
   for delete using (auth.uid() = user_id);
 
--- push_subscriptions (owner only: no update, no admin read)
+-- push_subscriptions (owner only: no admin read)
 drop policy if exists "Read own push subscriptions" on public.push_subscriptions;
 drop policy if exists "Insert own push subscriptions" on public.push_subscriptions;
+drop policy if exists "Update own push subscriptions" on public.push_subscriptions;
 drop policy if exists "Delete own push subscriptions" on public.push_subscriptions;
 create policy "Read own push subscriptions" on public.push_subscriptions
   for select using (auth.uid() = user_id);
 create policy "Insert own push subscriptions" on public.push_subscriptions
   for insert with check (auth.uid() = user_id);
+create policy "Update own push subscriptions" on public.push_subscriptions
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
 create policy "Delete own push subscriptions" on public.push_subscriptions
   for delete using (auth.uid() = user_id);
 

@@ -41,6 +41,7 @@ export async function addPushSubscription(
   timezone: string,
   todayIso: string,
 ): Promise<void> {
+  // Upsert on endpoint relies on the "Update own push subscriptions" RLS policy.
   const sub = await client
     .from('push_subscriptions')
     .upsert({ user_id: userId, ...row }, { onConflict: 'endpoint' })

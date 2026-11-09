@@ -90,6 +90,20 @@ describe('push adapter', () => {
     await expect(getCurrentPushSubscription()).resolves.toBe(sub)
   })
 
+  it('returns null when the service worker never becomes ready', async () => {
+    vi.useFakeTimers()
+    try {
+      vi.stubGlobal('navigator', {
+        serviceWorker: { ready: new Promise(() => {}) },
+      })
+      const result = getCurrentPushSubscription()
+      await vi.advanceTimersByTimeAsync(3000)
+      await expect(result).resolves.toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('unsubscribes the current subscription', async () => {
     const unsubscribe = vi.fn().mockResolvedValue(true)
     vi.stubGlobal('navigator', {

@@ -123,7 +123,7 @@ phone (PWA)                    Supabase
 ┌──────────────┐   subscribe   ┌──────────────────┐
 │ Settings UI  │──────────────▶│ push_subscriptions│
 │ service wkr  │               │ profiles (flags)  │
-│  push handler│◀──────────────│ Edge Function     │◀── pg_cron, hourly
+│  push handler│◀──────────────│ Edge Function     │◀── pg_cron, every 15 min
 └──────────────┘  Web Push     │  pt-reminder      │
                   (VAPID)      └──────────────────┘
 ```
@@ -155,7 +155,8 @@ New table `push_subscriptions`:
 | `auth`       | text not null                                         |
 | `created_at` | timestamptz not null default now()                    |
 
-RLS: users select/insert/delete their own rows only. The Edge Function uses
+RLS: users select/insert/update/delete their own rows only (update is needed
+for the upsert-on-endpoint re-enable path). The Edge Function uses
 the service role key and bypasses RLS.
 
 ### Edge Function `supabase/functions/pt-reminder/index.ts` (Deno)

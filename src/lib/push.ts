@@ -42,10 +42,24 @@ export function toSubscriptionRow(sub: PushSubscription): PushSubscriptionRow {
   return { endpoint: json.endpoint, p256dh, auth }
 }
 
+const READY_TIMEOUT_MS = 3000
+
 /** The active push subscription for this browser, or null. */
 export async function getCurrentPushSubscription(): Promise<PushSubscription | null> {
-  const registration = await navigator.serviceWorker.ready
-  return registration.pushManager.getSubscription()
+  // `ready` never resolves when no worker is registered (e.g. `npm run dev`).
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const timeout = new Promise<null>((resolve) => {
+    timer = setTimeout(() => resolve(null), READY_TIMEOUT_MS)
+  })
+  try {
+    const registration = await Promise.race([
+      navigator.serviceWorker.ready,
+      timeout,
+    ])
+    return registration ? registration.pushManager.getSubscription() : null
+  } finally {
+    clearTimeout(timer)
+  }
 }
 
 export class PushPermissionDeniedError extends Error {
