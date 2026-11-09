@@ -14,7 +14,7 @@ export function PtReminderSettings({
   return (
     <section className="settings__section">
       <h3>PT reminders</h3>
-      <label className="field">
+      <label className="field field--toggle">
         <input
           type="checkbox"
           checked={enabled}
