@@ -51,9 +51,10 @@ export function reminderBody(missed: number | null): string {
   return `It's been ${missed} business days since your last PT session. A few minutes today keeps you on track.`
 }
 
-/** Accepts `HH:MM` and `HH:MM:SS`. */
+/** Accepts `HH:MM` and `HH:MM:SS`; anything malformed becomes 09:00. */
 export function parseTimeToMinutes(time: string): number {
   const [h, m] = time.split(':').map(Number)
+  if (!Number.isFinite(h) || !Number.isFinite(m)) return 540
   return h * 60 + m
 }
 
@@ -89,19 +90,9 @@ export function localDateAndMinutes(
   }
 }
 
-export function isSendWindow(input: {
-  localMinutes: number
-  reminderTime: string
-  lastSentOn: string | null
-  todayIso: string
-}): boolean {
-  if (input.localMinutes < parseTimeToMinutes(input.reminderTime)) return false
-  return !(input.lastSentOn !== null && input.lastSentOn >= input.todayIso)
-}
-
 export type ReminderDecision = {
   send: boolean
-  reason: 'not-time' | 'already-sent' | 'not-lapsed' | 'send'
+  reason: 'not-time' | 'already-sent' | 'not-lapsed' | 'no-anchor' | 'send'
   localDate: string
   title?: string
   body?: string
@@ -125,7 +116,10 @@ export function decideForUser(input: {
   if (input.lastSentOn !== null && input.lastSentOn >= localDate) {
     return { send: false, reason: 'already-sent', localDate }
   }
-  const anchor = input.latestPtDate ?? input.enabledOn ?? localDate
+  const anchor = input.latestPtDate ?? input.enabledOn
+  if (anchor === null) {
+    return { send: false, reason: 'no-anchor', localDate }
+  }
   if (!shouldRemind(anchor, localDate)) {
     return { send: false, reason: 'not-lapsed', localDate }
   }

@@ -172,6 +172,42 @@ describe('usePtReminders', () => {
     expect(result.current.enabled).toBe(false)
   })
 
+  it('disable falls back to the endpoint matched at load when the browser subscription is gone', async () => {
+    vi.mocked(getCurrentPushSubscription).mockResolvedValueOnce(sub('e1'))
+    vi.mocked(loadPtReminderState).mockResolvedValue({
+      time: '09:00',
+      thisDeviceEnabled: true,
+    })
+    const { result } = await setup()
+    vi.mocked(getCurrentPushSubscription).mockResolvedValue(null)
+    await act(async () => {
+      await result.current.disable()
+    })
+    expect(removePushSubscription).toHaveBeenCalledWith(
+      expect.anything(),
+      'u1',
+      'e1',
+    )
+    expect(result.current.enabled).toBe(false)
+  })
+
+  it('enable shows a friendly message when the endpoint belongs to another account', async () => {
+    vi.mocked(subscribeToPush).mockResolvedValue(sub('e1'))
+    vi.mocked(addPushSubscription).mockRejectedValue(
+      new Error(
+        'new row violates row-level security policy for table "push_subscriptions"',
+      ),
+    )
+    const { result } = await setup()
+    await act(async () => {
+      await result.current.enable()
+    })
+    expect(result.current.enabled).toBe(false)
+    expect(result.current.error).toBe(
+      'This device is already registered to another account. Sign in there to turn its reminders off first.',
+    )
+  })
+
   it('saveTime persists and updates state', async () => {
     const { result } = await setup()
     await act(async () => {

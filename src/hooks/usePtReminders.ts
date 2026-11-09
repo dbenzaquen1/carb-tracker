@@ -14,6 +14,7 @@ import {
 import {
   addPushSubscription,
   loadPtReminderState,
+  DEFAULT_TIME,
   removePushSubscription,
   savePtReminderTime,
 } from '../lib/ptReminderStore'
@@ -32,13 +33,15 @@ export type PtRemindersState = {
   saveTime: (time: string) => Promise<void>
 }
 
-const DEFAULT_TIME = '09:00'
-
 function errorMessage(e: unknown): string {
   if (e instanceof PushPermissionDeniedError) {
     return 'Notifications are blocked for this app in your phone settings'
   }
-  return e instanceof Error ? e.message : String(e)
+  const message = e instanceof Error ? e.message : String(e)
+  if (message.includes('row-level security')) {
+    return 'This device is already registered to another account. Sign in there to turn its reminders off first.'
+  }
+  return message
 }
 
 async function currentEndpoint(): Promise<string | null> {
@@ -59,9 +62,13 @@ export function usePtReminders(userId: string | undefined): PtRemindersState {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const userRef = useRef(userId)
+  // Endpoint of this device's stored row, so disable() can still remove it
+  // after the browser has dropped its own subscription.
+  const knownEndpointRef = useRef<string | null>(null)
 
   useEffect(() => {
     userRef.current = userId
+    knownEndpointRef.current = null
     let active = true
     setBusy(false)
     setError(null)
@@ -76,6 +83,7 @@ export function usePtReminders(userId: string | undefined): PtRemindersState {
       try {
         const state = await loadPtReminderState(client, userId, endpoint)
         if (!active) return
+        knownEndpointRef.current = state.thisDeviceEnabled ? endpoint : null
         setTime(state.time)
         setEnabled(state.thisDeviceEnabled)
       } catch (e) {
@@ -123,14 +131,18 @@ export function usePtReminders(userId: string | undefined): PtRemindersState {
     await run(userId, async () => {
       const sub = await subscribeToPush(VAPID_PUBLIC_KEY!)
       const zone = Intl.DateTimeFormat().resolvedOptions().timeZone
+      const subscriptionRow = toSubscriptionRow(sub)
       await addPushSubscription(
         client,
         userId,
-        toSubscriptionRow(sub),
+        subscriptionRow,
         zone,
         todayISO(),
       )
-      return () => setEnabled(true)
+      return () => {
+        knownEndpointRef.current = subscriptionRow.endpoint
+        setEnabled(true)
+      }
     })
   }, [configured, supported, userId, run])
 
@@ -138,10 +150,13 @@ export function usePtReminders(userId: string | undefined): PtRemindersState {
     if (!supabase || !userId) return
     const client = supabase
     await run(userId, async () => {
-      const endpoint = await currentEndpoint()
+      const endpoint = (await currentEndpoint()) ?? knownEndpointRef.current
       await unsubscribeFromPush()
       if (endpoint) await removePushSubscription(client, userId, endpoint)
-      return () => setEnabled(false)
+      return () => {
+        knownEndpointRef.current = null
+        setEnabled(false)
+      }
     })
   }, [userId, run])
 

@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { PushSubscriptionRow } from './push'
 
-const DEFAULT_TIME = '09:00'
+export const DEFAULT_TIME = '09:00'
 
 function check(error: { message: string } | null): void {
   if (error) throw new Error(error.message)

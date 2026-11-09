@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest'
 import {
   businessDaysBetween,
   decideForUser,
-  isSendWindow,
   localDateAndMinutes,
   missedBusinessDays,
   parseTimeToMinutes,
@@ -59,6 +58,10 @@ describe('parseTimeToMinutes', () => {
     expect(parseTimeToMinutes('09:00')).toBe(540)
     expect(parseTimeToMinutes('09:30:00')).toBe(570)
   })
+  it('falls back to 09:00 for malformed input', () => {
+    expect(parseTimeToMinutes('9am')).toBe(540)
+    expect(parseTimeToMinutes('')).toBe(540)
+  })
 })
 describe('localDateAndMinutes', () => {
   it('converts to the given zone', () => {
@@ -95,25 +98,6 @@ describe('localDateAndMinutes', () => {
     ).toEqual({ dateIso: '2026-11-11', minutes: 5 })
   })
 })
-describe('isSendWindow', () => {
-  const base = { reminderTime: '09:00:00', todayIso: '2026-11-11' }
-  it('is closed before the time, open at and after it', () => {
-    expect(isSendWindow({ ...base, localMinutes: 539, lastSentOn: null })).toBe(
-      false,
-    )
-    expect(isSendWindow({ ...base, localMinutes: 540, lastSentOn: null })).toBe(
-      true,
-    )
-    expect(
-      isSendWindow({ ...base, localMinutes: 1000, lastSentOn: '2026-11-10' }),
-    ).toBe(true) // catch-up
-  })
-  it('is closed once sent today', () => {
-    expect(
-      isSendWindow({ ...base, localMinutes: 600, lastSentOn: '2026-11-11' }),
-    ).toBe(false)
-  })
-})
 describe('decideForUser', () => {
   const now = new Date('2026-11-11T14:05:00Z') // 09:05 New York, Wednesday
   const user = {
@@ -141,10 +125,10 @@ describe('decideForUser', () => {
         .reason,
     ).toBe('not-lapsed')
   })
-  it('falls back to the local date when there is no anchor at all', () => {
+  it('does not send when there is no anchor at all', () => {
     expect(
-      decideForUser({ ...user, latestPtDate: null, enabledOn: null }).reason,
-    ).toBe('not-lapsed')
+      decideForUser({ ...user, latestPtDate: null, enabledOn: null }),
+    ).toEqual({ send: false, reason: 'no-anchor', localDate: '2026-11-11' })
   })
   it('reports not-time, already-sent and not-lapsed', () => {
     expect(

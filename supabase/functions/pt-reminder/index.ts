@@ -57,6 +57,7 @@ Deno.serve(async (req) => {
     byUser.set(sub.user_id, [...(byUser.get(sub.user_id) ?? []), sub])
   }
   const userIds = [...byUser.keys()]
+  if (userIds.length === 0) return json({ checked: 0, sent: 0, results: [] })
 
   const { data: profiles, error: profilesError } = await supabase
     .from('profiles')
@@ -156,6 +157,19 @@ Deno.serve(async (req) => {
                 `pt-reminder user=${userId} send failed statusCode=${statusCode} body=${body}`,
               )
             }
+          }
+        }
+        if (removed > 0 && removed === (byUser.get(userId) ?? []).length) {
+          // Every subscription is gone, so reminders are effectively off;
+          // clear the anchor so re-enabling starts a fresh grace period.
+          const { error: clearError } = await supabase
+            .from('profiles')
+            .update({ pt_reminders_enabled_on: null })
+            .eq('id', userId)
+          if (clearError) {
+            console.error(
+              `pt-reminder user=${userId} anchor clear failed: ${clearError.message}`,
+            )
           }
         }
         result.delivered = delivered

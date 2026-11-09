@@ -207,8 +207,8 @@ repo root and Deno can import it from the function:
 - `reminderBody(missedBusinessDays)`: the notification text.
 - `localDateAndMinutes(nowUtc, timezone)`: local `YYYY-MM-DD` and minutes
   since midnight, via `Intl.DateTimeFormat`, which both runtimes have.
-- `isSendWindow({ localMinutes, reminderTime, lastSentOn, todayIso })`: the
-  "at or past the time, not yet sent today" rule.
+- The send-window rule ("at or past the time, not yet sent today") lives
+  inside `decideForUser`.
 
 The Vitest config gains `supabase/functions/_shared/**/*.test.ts` to its
 include list, and `tsconfig.json` includes that folder for type checking.
