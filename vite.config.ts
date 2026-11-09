@@ -15,6 +15,8 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
+      // Pull the push/notificationclick handlers into the generated worker.
+      workbox: { importScripts: ['push-sw.js'] },
       manifest: {
         name: 'Carb Tracker',
         short_name: 'Carbs',

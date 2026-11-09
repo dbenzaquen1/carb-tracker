@@ -42,6 +42,7 @@ jobs:
           VITE_BASE: /${{ github.event.repository.name }}/
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_VAPID_PUBLIC_KEY: ${{ secrets.VITE_VAPID_PUBLIC_KEY }}
         run: npm run build
 
       - name: Upload Pages artifact

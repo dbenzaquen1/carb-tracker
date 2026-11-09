@@ -33,6 +33,15 @@ export default tseslint.config(
       globals: globals.node,
     },
   },
+  // The push handler is a plain service-worker script served from public/.
+  {
+    files: ['public/push-sw.js'],
+    extends: [js.configs.recommended],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.serviceworker,
+    },
+  },
   // Turn off stylistic rules that conflict with Prettier.
   prettier,
 )
