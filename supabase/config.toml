@@ -1,0 +1,4 @@
+project_id = "carb-tracker"
+
+[functions.pt-reminder]
+verify_jwt = true

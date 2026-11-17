@@ -15,6 +15,8 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
+      // Pull the push/notificationclick handlers into the generated worker.
+      workbox: { importScripts: ['push-sw.js'] },
       manifest: {
         name: 'Carb Tracker',
         short_name: 'Carbs',
@@ -42,5 +44,18 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
     css: false,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'text-summary'],
+      include: ['src/**/*.{ts,tsx}', 'supabase/functions/_shared/**/*.ts'],
+      exclude: [
+        'src/**/*.test.{ts,tsx}',
+        'supabase/**/*.test.ts',
+        'src/test/**',
+        'src/main.tsx',
+        'src/vite-env.d.ts',
+        '**/*.d.ts',
+      ],
+    },
   },
 })

@@ -128,6 +128,20 @@ h3 {
   outline: 2px solid var(--green);
   outline-offset: 1px;
 }
+.field--toggle {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.6rem;
+}
+.field--toggle input {
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0;
+  border: none;
+  background: none;
+  accent-color: var(--green);
+}
 
 /* ---------- App shell ---------- */
 .app {

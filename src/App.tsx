@@ -10,6 +10,7 @@ import { useEntries } from './hooks/useEntries'
 import { useDailyCheck } from './hooks/useDailyCheck'
 import { useAdminData } from './hooks/useAdminData'
 import { useProfile } from './hooks/useProfile'
+import { usePtReminders } from './hooks/usePtReminders'
 import { useWorkoutSets } from './hooks/useWorkoutSets'
 import { AdminView } from './components/AdminView'
 import { BottomNav, type Tab } from './components/BottomNav'
@@ -91,6 +92,7 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
     fromDate,
     today,
   )
+  const ptReminders = usePtReminders(userId)
   const { doneDates: skinCreamDates, toggle: toggleSkinCream } = useDailyCheck(
     userId,
     'skin_cream_days',
@@ -308,6 +310,7 @@ function AuthedApp({ userId, email }: { userId: string; email: string }) {
             weeklySkinCreamGoal={weeklySkinCreamGoal}
             email={email}
             entries={entries}
+            ptReminders={ptReminders}
             onSaveGoal={updateGoal}
             onSaveWeeklyExerciseGoal={updateWeeklyExerciseGoal}
             onSaveWeeklyPtGoal={updateWeeklyPtGoal}

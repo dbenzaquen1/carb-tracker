@@ -17,6 +17,8 @@ the same data shows up on every device.
   weight × reps per set and see what you lifted last time for each exercise.
 - **Cloud sync** — data is stored in Supabase and synced across devices, behind
   a private login.
+- **PT reminders** — opt-in push notification when PT exercises slip for more
+  than two business days.
 - **Installable** — "Add to Home Screen" on a phone for an app-like, offline-
   capable experience.
 
@@ -83,6 +85,62 @@ npm run dev
 
 Open the printed URL. Create an account, set your daily goal in **Settings**,
 and start logging.
+
+## PT reminders (push notifications)
+
+Users can opt in (Settings → PT reminders) to a push notification when they go
+more than two business days without marking PT done. A Supabase Edge Function
+([`supabase/functions/pt-reminder`](supabase/functions/pt-reminder)) runs every
+15 minutes, decides per user, and sends Web Push. One-time owner setup:
+
+1. Apply migration
+   [`supabase/migrations/0007_pt_reminders.sql`](supabase/migrations/0007_pt_reminders.sql)
+   in the SQL editor.
+2. Generate a VAPID key pair: `npx web-push generate-vapid-keys`.
+3. Put the public key in `.env.local` and in the GitHub Actions secrets as
+   `VITE_VAPID_PUBLIC_KEY`, then redeploy the app.
+4. Set the function secrets (the private key never goes in the app):
+
+   ```bash
+   supabase secrets set VAPID_PUBLIC_KEY=... VAPID_PRIVATE_KEY=... VAPID_SUBJECT=mailto:you@example.com
+   ```
+
+5. Link and deploy the function:
+
+   ```bash
+   supabase login
+   supabase link --project-ref <project-ref>
+   supabase functions deploy pt-reminder
+   ```
+
+   The project ref is the id in your dashboard URL; `project_id` in
+   `supabase/config.toml` is only a local label, not the ref.
+
+6. Schedule it: enable `pg_cron` and `pg_net`, store the service-role key in Vault, fill
+   in your project URL, and run the `cron.schedule` call from the
+   commented block at the bottom of the migration
+   ([`0007_pt_reminders.sql`](supabase/migrations/0007_pt_reminders.sql)).
+
+   The key (for Vault and for the curl below) must be the **legacy JWT-format
+   `service_role` key** (Dashboard → Project Settings → API Keys → Legacy),
+   not an `sb_secret_...` key. The function is deployed with
+   `verify_jwt = true` and compares the bearer token to
+   `SUPABASE_SERVICE_ROLE_KEY`.
+
+7. Check it is firing: in the SQL editor run
+   `select status_code, content from net._http_response order by created desc limit 5;`
+   (expect 200s), and open the function's logs in the dashboard (one
+   `pt-reminder user=… reason=…` line per subscribed user per run).
+8. On her phone, open the installed app → Settings → turn on "Remind me when
+   I've missed PT for 2 business days" and pick a time. On iPhone, push only
+   works once the app is added to the home screen (iOS 16.4 or later).
+
+Check it without sending anything (`dry_run` reports each user's decision but
+sends and writes nothing):
+
+```bash
+curl -H "Authorization: Bearer $SERVICE_ROLE_KEY" "https://<ref>.supabase.co/functions/v1/pt-reminder?dry_run=1"
+```
 
 ## Available scripts
 

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { todayISO } from '../lib/dates'
 import { applyTheme, getStoredTheme, type ThemePref } from '../lib/theme'
 import type { Entry } from '../types'
+import type { PtRemindersState } from '../hooks/usePtReminders'
+import { PtReminderSettings } from './PtReminderSettings'
 
 const THEME_OPTIONS: { value: ThemePref; label: string }[] = [
   { value: 'system', label: 'System' },
@@ -16,6 +18,7 @@ interface Props {
   weeklySkinCreamGoal: number
   email: string
   entries: Entry[]
+  ptReminders: PtRemindersState
   onSaveGoal: (goal: number) => void | Promise<void>
   onSaveWeeklyExerciseGoal: (goal: number) => void | Promise<void>
   onSaveWeeklyPtGoal: (goal: number) => void | Promise<void>
@@ -30,6 +33,7 @@ export function Settings({
   weeklySkinCreamGoal,
   email,
   entries,
+  ptReminders,
   onSaveGoal,
   onSaveWeeklyExerciseGoal,
   onSaveWeeklyPtGoal,
@@ -209,6 +213,8 @@ export function Settings({
           {ptSaved ? 'Saved ✓' : 'Save PT goal'}
         </button>
       </section>
+
+      <PtReminderSettings {...ptReminders} />
 
       <section className="settings__section">
         <label className="field">
